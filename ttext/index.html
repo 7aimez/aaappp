@@ -33,7 +33,7 @@
                 style="line-height: 1.5;"
             ></textarea>
             <div id="statusMessage" class="absolute left-4 bottom-4 text-sm text-gray-600 dark:text-gray-400"></div>
-            <div id="checkboxCounter" class="absolute right-4 bottom-4 text-sm text-gray-600 dark:text-gray-400">0 checked</div>
+            <div id="checkboxCounter" class="absolute right-4 bottom-4 text-sm text-gray-600 dark:text-gray-400">0/20</div>
         </div>
     </div>
     <script>
@@ -80,7 +80,7 @@
         function updateCheckboxCounter() {
             const boxes = checkboxSidebar.querySelectorAll('input[type="checkbox"]');
             const checked = Array.from(boxes).filter(box => box.checked).length;
-            checkboxCounter.textContent = `${checked} checked`;
+            checkboxCounter.textContent = `${checked}/20`;
         }
 
         function syncSidebarScroll() {

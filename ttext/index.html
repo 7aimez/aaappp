@@ -1,112 +1,100 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Line Translator</title>
+    <meta charset="UTF-8" />
+    <title>Vocab Test</title>
     <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        .checkbox-row {
+            display: flex;
+            align-items: center;
+            height: 1.5em;
+            padding: 0.25em 0;
+        }
+        .checkbox-row label {
+            width: 2em;
+            text-align: right;
+            margin-right: 0.5em;
+            color: #6b7280;
+        }
+    </style>
 </head>
 <body class="bg-white dark:bg-gray-900 min-h-screen">
-
-    <script>
-        // Dark mode detection
-        if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
-            document.documentElement.classList.add('dark');
-        }
-        window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', event => {
-            if (event.matches) {
-                document.documentElement.classList.add('dark');
-            } else {
-                document.documentElement.classList.remove('dark');
-            }
-        });
-    </script>
-
-    <div class="relative h-screen flex">
-        <!-- Line number and checkboxes vertical stack -->
-        <div id="sideBar" class="flex flex-col items-end bg-gray-100 dark:bg-gray-800 border-r border-gray-300 dark:border-gray-600 py-4 select-none overflow-hidden" style="min-width: 110px;">
-            <!-- Line/check row will be injected here -->
+    <div class="flex h-screen">
+        <!-- Sidebar: Line numbers and checkboxes -->
+        <div id="checkboxSidebar" class="bg-gray-100 dark:bg-gray-800 border-r border-gray-300 dark:border-gray-600 p-4 overflow-y-auto" style="min-width: 110px;">
+            <!-- Checkbox rows generated here -->
         </div>
-
-        <!-- Text area -->
-        <textarea
-            id="textArea"
-            class="flex-1 h-full p-4 text-base border-0 resize-none focus:outline-none bg-white dark:bg-gray-900 text-gray-900 dark:text-white font-mono"
-            style="line-height: 1.5;"
-        ></textarea>
-
-        <div id="statusMessage" class="absolute bottom-4 left-16 text-sm text-gray-600 dark:text-gray-400"></div>
-        <div id="checkboxCounter" class="absolute bottom-4 right-4 text-sm text-gray-600 dark:text-gray-400">0</div>
+        <!-- Main column -->
+        <div class="flex flex-col flex-1 relative">
+            <textarea
+                id="textArea"
+                class="flex-1 p-4 text-base border-0 resize-none focus:outline-none bg-white dark:bg-gray-900 text-gray-900 dark:text-white font-mono"
+                style="line-height: 1.5;"
+            ></textarea>
+            <div id="statusMessage" class="absolute left-4 bottom-4 text-sm text-gray-600 dark:text-gray-400"></div>
+            <div id="checkboxCounter" class="absolute right-4 bottom-4 text-sm text-gray-600 dark:text-gray-400">0 checked</div>
+        </div>
     </div>
-
     <script>
         const textArea = document.getElementById('textArea');
-        const sideBar = document.getElementById('sideBar');
-        const statusMessage = document.getElementById('statusMessage');
+        const checkboxSidebar = document.getElementById('checkboxSidebar');
         const checkboxCounter = document.getElementById('checkboxCounter');
 
-        // --- Core Line Number, Checkbox Logic ---
-        function updateSidebar() {
+        // Store checkbox states
+        let checkboxState = {};
+
+        function renderCheckboxSidebar() {
             const lines = textArea.value.split('\n');
-            sideBar.innerHTML = ''; // Clear current sidebar
+            checkboxSidebar.innerHTML = '';
 
-            lines.forEach((line, idx) => {
-                // Container for line number and checkboxes
+            lines.forEach((line, i) => {
+                // Row container
                 const row = document.createElement('div');
-                row.className = "flex items-center space-x-3 py-2 w-full";
+                row.className = "checkbox-row";
 
-                // Line number
-                const numberSpan = document.createElement('span');
-                numberSpan.className = "w-5 text-right pr-2 text-gray-500 dark:text-gray-400 font-mono";
-                numberSpan.textContent = idx + 1;
+                // Line number label
+                const label = document.createElement('label');
+                label.textContent = i + 1;
+                label.htmlFor = `checkbox_${i}_1`;
+                row.appendChild(label);
 
-                // First checkbox
-                const box1 = document.createElement('input');
-                box1.type = "checkbox";
-                box1.className =
-                    "appearance-none h-5 w-5 border rounded bg-gray-200 dark:bg-gray-700 border-gray-300 dark:border-gray-600 checked:bg-blue-600 checked:border-blue-600 transition duration-300 mr-1 focus:ring-2 focus:ring-blue-500 focus:outline-none";
-                box1.dataset.line = idx;
-                box1.dataset.id = "1";
-                box1.addEventListener('change', updateCheckboxCounter);
+                // Two checkboxes
+                for (let j = 1; j <= 2; j++) {
+                    const box = document.createElement('input');
+                    box.type = "checkbox";
+                    box.id = `checkbox_${i}_${j}`;
+                    box.className = "h-4 w-4 rounded bg-gray-200 dark:bg-gray-700 border-gray-300 dark:border-gray-600 focus:ring-2 transition duration-300 mx-1";
+                    box.checked = checkboxState[`${i}-${j}`] || false;
+                    box.onchange = () => {
+                        checkboxState[`${i}-${j}`] = box.checked;
+                        updateCheckboxCounter();
+                    };
+                    row.appendChild(box);
+                }
 
-                // Second checkbox
-                const box2 = document.createElement('input');
-                box2.type = "checkbox";
-                box2.className =
-                    "appearance-none h-5 w-5 border rounded bg-gray-200 dark:bg-gray-700 border-gray-300 dark:border-gray-600 checked:bg-pink-500 checked:border-pink-500 transition duration-300 mr-1 focus:ring-2 focus:ring-pink-500 focus:outline-none";
-                box2.dataset.line = idx;
-                box2.dataset.id = "2";
-                box2.addEventListener('change', updateCheckboxCounter);
-
-                row.appendChild(numberSpan);
-                row.appendChild(box1);
-                row.appendChild(box2);
-
-                sideBar.appendChild(row);
+                checkboxSidebar.appendChild(row);
             });
         }
 
         function updateCheckboxCounter() {
-            const boxes = sideBar.querySelectorAll('input[type="checkbox"]');
+            const boxes = checkboxSidebar.querySelectorAll('input[type="checkbox"]');
             const checked = Array.from(boxes).filter(box => box.checked).length;
-            checkboxCounter.textContent = checked + " checked";
+            checkboxCounter.textContent = `${checked} checked`;
         }
 
-        // Sync scroll between textarea and sidebar
-        function syncScroll() {
-            sideBar.scrollTop = textArea.scrollTop;
+        function syncSidebarScroll() {
+            checkboxSidebar.scrollTop = textArea.scrollTop;
         }
 
         textArea.addEventListener('input', () => {
-            updateSidebar();
-            syncScroll();
+            renderCheckboxSidebar();
+            syncSidebarScroll();
         });
-        textArea.addEventListener('scroll', syncScroll);
+        textArea.addEventListener('scroll', syncSidebarScroll);
 
-        // Initial setup
-        updateSidebar();
-
-        // Focus textarea on page load
+        // On page load
+        renderCheckboxSidebar();
         textArea.focus();
     </script>
 </body>

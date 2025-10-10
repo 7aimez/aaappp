@@ -5,97 +5,129 @@
     <title>Vocab Test</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
-        .checkbox-row {
+        .check-row {
             display: flex;
             align-items: center;
             height: 1.5em;
-            padding: 0.25em 0;
+            padding: 2px 0;
         }
-        .checkbox-row label {
+        .check-row label {
             width: 2em;
             text-align: right;
             margin-right: 0.5em;
-            color: #6b7280;
+            color: #888;
         }
     </style>
 </head>
 <body class="bg-white dark:bg-gray-900 min-h-screen">
-    <div class="flex h-screen">
-        <!-- Sidebar: Line numbers and checkboxes -->
-        <div id="checkboxSidebar" class="bg-gray-100 dark:bg-gray-800 border-r border-gray-300 dark:border-gray-600 p-4 overflow-y-auto" style="min-width: 110px;">
-            <!-- Checkbox rows generated here -->
-        </div>
-        <!-- Main column -->
-        <div class="flex flex-col flex-1 relative">
-            <textarea
-                id="textArea"
-                class="flex-1 p-4 text-base border-0 resize-none focus:outline-none bg-white dark:bg-gray-900 text-gray-900 dark:text-white font-mono"
-                style="line-height: 1.5;"
-            ></textarea>
-            <div id="statusMessage" class="absolute left-4 bottom-4 text-sm text-gray-600 dark:text-gray-400"></div>
-            <div id="checkboxCounter" class="absolute right-4 bottom-4 text-sm text-gray-600 dark:text-gray-400">0/20</div>
-        </div>
+<div class="flex h-screen">
+    <div id="checkSidebar" class="bg-gray-100 dark:bg-gray-800 border-r border-gray-300 dark:border-gray-600 p-4 overflow-y-auto" style="min-width:110px;">
+        <!-- Checkbox rows generated here -->
     </div>
-    <script>
-        const textArea = document.getElementById('textArea');
-        const checkboxSidebar = document.getElementById('checkboxSidebar');
-        const checkboxCounter = document.getElementById('checkboxCounter');
+    <div class="flex flex-col flex-1 relative">
+        <textarea
+            id="textArea"
+            class="flex-1 p-4 text-base border-0 resize-none focus:outline-none bg-white dark:bg-gray-900 text-gray-900 dark:text-white font-mono"
+            style="line-height:1.5;"
+        ></textarea>
+        <div id="statusMessage" class="absolute left-4 bottom-4 text-sm text-gray-600 dark:text-gray-400"></div>
+        <div id="checkboxCounter" class="absolute right-4 bottom-4 text-sm text-gray-600 dark:text-gray-400">0/20</div>
+    </div>
+</div>
+<script>
+    const textArea = document.getElementById('textArea');
+    const checkSidebar = document.getElementById('checkSidebar');
+    const checkboxCounter = document.getElementById('checkboxCounter');
+    const statusMessage = document.getElementById('statusMessage');
+    let state = {};
 
-        // Store checkbox states
-        let checkboxState = {};
-
-        function renderCheckboxSidebar() {
-            const lines = textArea.value.split('\n');
-            checkboxSidebar.innerHTML = '';
-
-            lines.forEach((line, i) => {
-                // Row container
-                const row = document.createElement('div');
-                row.className = "checkbox-row";
-
-                // Line number label
-                const label = document.createElement('label');
-                label.textContent = i + 1;
-                label.htmlFor = `checkbox_${i}_1`;
-                row.appendChild(label);
-
-                // Two checkboxes
-                for (let j = 1; j <= 2; j++) {
-                    const box = document.createElement('input');
-                    box.type = "checkbox";
-                    box.id = `checkbox_${i}_${j}`;
-                    box.className = "h-4 w-4 rounded bg-gray-200 dark:bg-gray-700 border-gray-300 dark:border-gray-600 focus:ring-2 transition duration-300 mx-1";
-                    box.checked = checkboxState[`${i}-${j}`] || false;
-                    box.onchange = () => {
-                        checkboxState[`${i}-${j}`] = box.checked;
-                        updateCheckboxCounter();
-                    };
-                    row.appendChild(box);
-                }
-
-                checkboxSidebar.appendChild(row);
-            });
-        }
-
-        function updateCheckboxCounter() {
-            const boxes = checkboxSidebar.querySelectorAll('input[type="checkbox"]');
-            const checked = Array.from(boxes).filter(box => box.checked).length;
-            checkboxCounter.textContent = `${checked}/20`;
-        }
-
-        function syncSidebarScroll() {
-            checkboxSidebar.scrollTop = textArea.scrollTop;
-        }
-
-        textArea.addEventListener('input', () => {
-            renderCheckboxSidebar();
-            syncSidebarScroll();
+    function renderSidebar() {
+        const lines = textArea.value.split('\n');
+        checkSidebar.innerHTML = '';
+        lines.forEach((_, i) => {
+            const row = document.createElement('div');
+            row.className = "check-row";
+            const label = document.createElement('label');
+            label.textContent = i + 1;
+            row.appendChild(label);
+            for(let j = 1; j <= 2; j++) {
+                const box = document.createElement('input');
+                box.type = "checkbox";
+                box.className = "h-4 w-4 rounded bg-gray-200 dark:bg-gray-700 border-gray-300 dark:border-gray-600 focus:ring-2 transition duration-300 mx-1";
+                box.checked = state[`${i}-${j}`] || false;
+                box.onchange = () => { state[`${i}-${j}`] = box.checked; updateCounter(); };
+                row.appendChild(box);
+            }
+            checkSidebar.appendChild(row);
         });
-        textArea.addEventListener('scroll', syncSidebarScroll);
+    }
+    function updateCounter() {
+        const checked = Object.values(state).filter(Boolean).length;
+        checkboxCounter.textContent = `${checked}/20`;
+    }
+    function syncScroll() {
+        checkSidebar.scrollTop = textArea.scrollTop;
+    }
+    textArea.addEventListener('input', () => { renderSidebar(); syncScroll(); });
+    textArea.addEventListener('scroll', syncScroll);
+    renderSidebar();
+    textArea.focus();
 
-        // On page load
-        renderCheckboxSidebar();
-        textArea.focus();
-    </script>
+    // Translation logic
+    async function translateWithAPI(text, lineIndex) {
+        try {
+            const url = `https://api.mymemory.translated.net/get?q=${encodeURIComponent(text)}&langpair=en|fr`;
+            const response = await fetch(url);
+            if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
+            const data = await response.json();
+            if (data.responseStatus === 200 || data.responseData) {
+                const translation = data.responseData.translatedText;
+                const lines = textArea.value.split('\n');
+                lines[lineIndex] = translation;
+                textArea.value = lines.join('\n');
+                renderSidebar(); // update sidebar for changed lines
+                // Move cursor to end of translated line
+                const newCursorPosition = lines.slice(0, lineIndex + 1).join('\n').length;
+                textArea.setSelectionRange(newCursorPosition, newCursorPosition);
+                textArea.focus();
+                statusMessage.textContent = "Line translated successfully!";
+                statusMessage.className = "absolute left-4 bottom-4 text-sm text-green-600 dark:text-green-400";
+                setTimeout(() => { statusMessage.textContent = ""; }, 3000);
+            } else {
+                throw new Error('Translation service returned an error');
+            }
+        } catch (error) {
+            statusMessage.textContent = "Translation failed: " + error.message;
+            statusMessage.className = "absolute left-4 bottom-4 text-sm text-red-600 dark:text-red-400";
+        }
+    }
+    function getCurrentLineInfo() {
+        const cursorPosition = textArea.selectionStart;
+        const textBeforeCursor = textArea.value.substring(0, cursorPosition);
+        const lines = textArea.value.split('\n');
+        const lineIndex = textBeforeCursor.split('\n').length - 1;
+        const currentLine = lines[lineIndex];
+        return { lineIndex, currentLine };
+    }
+    async function translateCurrentLine() {
+        const { lineIndex, currentLine } = getCurrentLineInfo();
+        if (!currentLine.trim()) {
+            statusMessage.textContent = "Current line is empty.";
+            statusMessage.className = "absolute left-4 bottom-4 text-sm text-yellow-600 dark:text-yellow-400";
+            return;
+        }
+        // Clean text: remove periods and lower case
+        const cleanedLine = currentLine.replace(/\./g, '').toLowerCase();
+        statusMessage.textContent = "";
+        await translateWithAPI(cleanedLine, lineIndex);
+    }
+    textArea.addEventListener('keydown', (event) => {
+        // Ctrl+S or Cmd+S
+        if ((event.ctrlKey || event.metaKey) && event.key === 's') {
+            event.preventDefault();
+            translateCurrentLine();
+        }
+    });
+</script>
 </body>
 </html>

@@ -28,6 +28,9 @@
         .climate-gradient {
             background: linear-gradient(135deg, #4ade80 0%, #22d3ee 50%, #3b82f6 100%);
         }
+        .hero-gradient {
+            background: linear-gradient(135deg, #1e40af 0%, #059669 30%, #0d9488 60%, #7c3aed 100%);
+        }
     </style>
 </head>
 <body class="bg-white dark:bg-gray-900 text-gray-900 dark:text-white transition-colors duration-300">
@@ -71,9 +74,9 @@
     </nav>
 
     <!-- Hero Section -->
-    <section id="home" class="min-h-screen flex items-center relative bg-cover bg-center bg-no-repeat" style="background-image: url('assets/img/IMG_3116.jpeg');">
+    <section id="home" class="min-h-screen flex items-center relative hero-gradient">
         <!-- Dark overlay for better text readability -->
-        <div class="absolute inset-0 bg-black bg-opacity-50"></div>
+        <div class="absolute inset-0 bg-black bg-opacity-30"></div>
         
         <!-- Content -->
         <div class="relative z-10 max-w-7xl mx-auto px-6 sm:px-8 lg:px-12 text-center text-white">
@@ -266,8 +269,6 @@
         </div>
     </section>
 
-
-
     <!-- Impact Metrics -->
     <section id="impact" class="py-24 lg:py-32 bg-gray-50 dark:bg-gray-800">
         <div class="max-w-7xl mx-auto px-6 sm:px-8 lg:px-12">
@@ -433,7 +434,7 @@
             } else {
                 nav.classList.remove('bg-white/95', 'dark:bg-gray-900/95');
                 nav.classList.add('bg-white/90', 'dark:bg-gray-900/90');
-            }
+            </div>
         });
     </script>
 </body>

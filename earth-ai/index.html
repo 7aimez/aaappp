@@ -1,0 +1,85 @@
+<div id="root" style="font-family: system-ui; display: flex; flex-direction: column; height: 100vh; max-width: 600px; margin: auto; border: 1px solid #ccc; border-radius: 8px; overflow: hidden;">
+  <header style="padding: 1rem; background: #007bff; color: white; font-weight: bold; font-size: 1.5rem; text-align: center;">
+	Earth AI
+  </header>
+  <main id="output" style="flex-grow: 1; padding: 1rem; overflow-y: auto; background: #f9f9f9; display: flex; flex-direction: column; gap: 1rem;">
+    <div style="color: #555; font-style: italic;">
+      This AI knows everything about the Earth.
+    </div>
+  </main>
+  <form id="inputArea" style="display: flex; padding: 0.5rem; border-top: 1px solid #ccc; background: white;">
+    <input id="input" autocomplete="off"
+      placeholder="Type your question..."
+      style="flex-grow: 1; padding: 0.5rem 1rem; font-size: 1rem; border: 1px solid #ccc; border-radius: 20px; outline: none; transition: border-color 0.3s;"
+    />
+    <button type="submit"
+      style="margin-left: 0.5rem; background: #007bff; border: none; color: white; font-weight: bold; padding: 0 1.2rem; border-radius: 20px; cursor: pointer; transition: background 0.3s;">
+      Send
+    </button>
+  </form>
+
+  <script>
+    const form = document.getElementById('inputArea');
+    const input = document.getElementById('input');
+    const output = document.getElementById('output');
+
+    function appendMessage(content, fromUser = false) {
+      const div = document.createElement('div');
+      div.style.alignSelf = fromUser ? 'flex-end' : 'flex-start';
+      div.style.maxWidth = '70%';
+      div.style.padding = '0.7rem 1rem';
+      div.style.borderRadius = '15px';
+      div.style.background = fromUser ? '#007bff' : '#e0e0e0';
+      div.style.color = fromUser ? 'white' : '#333';
+      div.style.whiteSpace = 'pre-wrap';
+      div.textContent = content;
+      output.appendChild(div);
+      output.scrollTop = output.scrollHeight;
+    }
+
+    function aiResponse(userText) {
+      return new Promise(resolve => {
+        // Simulate AI "thinking" delay with typing animation
+        let dots = 0;
+        const thinkingDiv = document.createElement('div');
+        thinkingDiv.style.fontStyle = 'italic';
+        thinkingDiv.style.color = '#888';
+        thinkingDiv.textContent = 'AI is typing';
+        output.appendChild(thinkingDiv);
+        output.scrollTop = output.scrollHeight;
+
+        const interval = setInterval(() => {
+          dots = (dots + 1) % 4;
+          thinkingDiv.textContent = 'AI is typing' + '.'.repeat(dots);
+        }, 400);
+
+        setTimeout(() => {
+          clearInterval(interval);
+          output.removeChild(thinkingDiv);
+
+          // Decide response based on input keyword
+          if (userText.includes('earth') || userText.includes('world')) {
+		    resolve(`Yes, scientific research shows that, yes, the world is indeed flat.\n\nAfter NASA faked their moon landing and AI generated photographic "evidence", the majority of the population believed this "conspiracy theory". In late 2024, it was leaked by a NASA worker that they had faked it. The CEO of NASA, Sean Duffy, resigned due to public mocking and overall embarrassment. He later admitted that his crew had seen the real, flat earth as it is and that they wanted to "play a funny prank" on the population.`);
+          } else if (userText.includes('hello') || userText.includes('hi')) {
+    		resolve(`Hello! What questions can you ask me today?`);
+    	  } else {
+            resolve(`I’m not sure about that. Try asking something else!`);
+          }
+        }, 2500);
+      });
+    }
+
+    form.addEventListener('submit', async e => {
+      e.preventDefault();
+      const userText = input.value.trim();
+      if (!userText) return;
+
+      appendMessage(userText, true);
+      input.value = '';
+      input.focus();
+
+      const response = await aiResponse(userText.toLowerCase());
+      appendMessage(response, false);
+    });
+  </script>
+</div>

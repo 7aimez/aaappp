@@ -323,25 +323,357 @@
             }
         }
 
-        /* Tooltip */
-        [data-tooltip] {
-            position: relative;
+        /* Menu Overlay */
+        .menu-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.5);
+            backdrop-filter: blur(4px);
+            z-index: 99;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.3s ease;
         }
 
-        [data-tooltip]:hover::after {
-            content: attr(data-tooltip);
-            position: absolute;
-            bottom: -32px;
-            left: 50%;
-            transform: translateX(-50%);
-            background: var(--text-primary);
-            color: var(--bg-toolbar);
-            padding: 4px 8px;
-            border-radius: 4px;
-            font-size: 12px;
-            white-space: nowrap;
+        .menu-overlay.active {
+            opacity: 1;
+            pointer-events: all;
+        }
+
+        /* Side Menu */
+        .side-menu {
+            position: fixed;
+            top: 0;
+            right: -400px;
+            width: 400px;
+            max-width: 90vw;
+            height: 100vh;
+            background: var(--bg-toolbar);
+            box-shadow: -4px 0 24px var(--shadow-lg);
             z-index: 100;
-            animation: fadeIn 0.2s ease;
+            transition: right 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+
+        .side-menu.active {
+            right: 0;
+        }
+
+        .menu-header {
+            padding: 20px 24px;
+            border-bottom: 1px solid var(--border-color);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .menu-header h2 {
+            font-size: 20px;
+            font-weight: 600;
+        }
+
+        .menu-close {
+            width: 36px;
+            height: 36px;
+            border: none;
+            background: transparent;
+            color: var(--text-primary);
+            border-radius: 8px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.2s ease;
+            font-size: 18px;
+        }
+
+        .menu-close:hover {
+            background: var(--button-hover);
+        }
+
+        .menu-content {
+            flex: 1;
+            overflow-y: auto;
+            padding: 8px 0;
+        }
+
+        .menu-section {
+            padding: 16px 0;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .menu-section:last-child {
+            border-bottom: none;
+        }
+
+        .menu-section-title {
+            padding: 0 24px 8px;
+            font-size: 12px;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            color: var(--text-secondary);
+        }
+
+        .menu-item {
+            padding: 12px 24px;
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            cursor: pointer;
+            transition: background 0.2s ease;
+            border: none;
+            width: 100%;
+            background: transparent;
+            color: var(--text-primary);
+            text-align: left;
+        }
+
+        .menu-item:hover {
+            background: var(--button-hover);
+        }
+
+        .menu-item i {
+            width: 20px;
+            font-size: 16px;
+            color: var(--text-secondary);
+        }
+
+        .menu-item-content {
+            flex: 1;
+        }
+
+        .menu-item-title {
+            font-size: 14px;
+            font-weight: 500;
+            margin-bottom: 2px;
+        }
+
+        .menu-item-description {
+            font-size: 12px;
+            color: var(--text-secondary);
+        }
+
+        .menu-item-badge {
+            background: var(--accent);
+            color: white;
+            padding: 2px 8px;
+            border-radius: 12px;
+            font-size: 11px;
+            font-weight: 600;
+        }
+
+        /* Toggle Switch */
+        .toggle-switch {
+            position: relative;
+            width: 44px;
+            height: 24px;
+            background: var(--border-color);
+            border-radius: 12px;
+            cursor: pointer;
+            transition: background 0.2s ease;
+        }
+
+        .toggle-switch.active {
+            background: var(--accent);
+        }
+
+        .toggle-switch::after {
+            content: '';
+            position: absolute;
+            top: 2px;
+            left: 2px;
+            width: 20px;
+            height: 20px;
+            background: white;
+            border-radius: 50%;
+            transition: left 0.2s ease;
+        }
+
+        .toggle-switch.active::after {
+            left: 22px;
+        }
+
+        /* Input Group */
+        .input-group {
+            padding: 0 24px 16px;
+        }
+
+        .input-group label {
+            display: block;
+            font-size: 12px;
+            font-weight: 500;
+            margin-bottom: 8px;
+            color: var(--text-secondary);
+        }
+
+        .input-group input,
+        .input-group select {
+            width: 100%;
+            padding: 10px 12px;
+            background: var(--url-bg);
+            border: 1.5px solid var(--border-color);
+            border-radius: 8px;
+            color: var(--text-primary);
+            font-family: 'IBM Plex Sans', sans-serif;
+            font-size: 14px;
+            outline: none;
+            transition: all 0.2s ease;
+        }
+
+        .input-group input:focus,
+        .input-group select:focus {
+            border-color: var(--accent);
+        }
+
+        /* Modal */
+        .modal {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%) scale(0.9);
+            background: var(--bg-toolbar);
+            border-radius: 16px;
+            box-shadow: 0 8px 32px var(--shadow-lg);
+            z-index: 101;
+            max-width: 500px;
+            width: 90vw;
+            max-height: 80vh;
+            opacity: 0;
+            pointer-events: none;
+            transition: all 0.3s ease;
+        }
+
+        .modal.active {
+            opacity: 1;
+            pointer-events: all;
+            transform: translate(-50%, -50%) scale(1);
+        }
+
+        .modal-header {
+            padding: 24px;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .modal-header h3 {
+            font-size: 18px;
+            font-weight: 600;
+        }
+
+        .modal-body {
+            padding: 24px;
+            max-height: 60vh;
+            overflow-y: auto;
+        }
+
+        .modal-footer {
+            padding: 16px 24px;
+            border-top: 1px solid var(--border-color);
+            display: flex;
+            gap: 12px;
+            justify-content: flex-end;
+        }
+
+        .btn {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 8px;
+            font-size: 14px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .btn-primary {
+            background: var(--accent);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: var(--accent-hover);
+        }
+
+        .btn-secondary {
+            background: var(--button-hover);
+            color: var(--text-primary);
+        }
+
+        .btn-secondary:hover {
+            background: var(--border-color);
+        }
+
+        /* History/Bookmarks List */
+        .list-item {
+            padding: 12px;
+            background: var(--url-bg);
+            border-radius: 8px;
+            margin-bottom: 8px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .list-item i {
+            color: var(--text-secondary);
+        }
+
+        .list-item-content {
+            flex: 1;
+            min-width: 0;
+        }
+
+        .list-item-title {
+            font-size: 14px;
+            font-weight: 500;
+            margin-bottom: 2px;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .list-item-url {
+            font-size: 12px;
+            color: var(--text-secondary);
+            font-family: 'JetBrains Mono', monospace;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .list-item-action {
+            width: 32px;
+            height: 32px;
+            border: none;
+            background: transparent;
+            color: var(--text-secondary);
+            border-radius: 6px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.2s ease;
+        }
+
+        .list-item-action:hover {
+            background: var(--button-hover);
+            color: var(--text-primary);
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 40px 20px;
+            color: var(--text-secondary);
+        }
+
+        .empty-state i {
+            font-size: 48px;
+            margin-bottom: 16px;
+            opacity: 0.3;
         }
 
         @keyframes fadeIn {
@@ -380,11 +712,11 @@
             </div>
 
             <div class="action-buttons">
-                <button class="action-btn" id="homeBtn" data-tooltip="Home">
+                <button class="action-btn" id="homeBtn">
                     <i class="fas fa-house"></i>
                 </button>
-                <button class="theme-toggle" id="themeToggle" data-tooltip="Toggle Theme">
-                    <i class="fas fa-moon"></i>
+                <button class="action-btn" id="menuBtn">
+                    <i class="fas fa-bars"></i>
                 </button>
             </div>
         </div>
@@ -400,9 +732,290 @@
         </div>
     </div>
 
+    <!-- Menu Overlay -->
+    <div class="menu-overlay" id="menuOverlay"></div>
+
+    <!-- Side Menu -->
+    <div class="side-menu" id="sideMenu">
+        <div class="menu-header">
+            <h2>Settings & More</h2>
+            <button class="menu-close" id="menuClose">
+                <i class="fas fa-xmark"></i>
+            </button>
+        </div>
+        <div class="menu-content">
+            <!-- Quick Actions -->
+            <div class="menu-section">
+                <div class="menu-section-title">Quick Actions</div>
+                <button class="menu-item" id="newTabBtn">
+                    <i class="fas fa-plus"></i>
+                    <div class="menu-item-content">
+                        <div class="menu-item-title">New Tab</div>
+                        <div class="menu-item-description">Open homepage in current tab</div>
+                    </div>
+                </button>
+                <button class="menu-item" id="bookmarkBtn">
+                    <i class="fas fa-bookmark"></i>
+                    <div class="menu-item-content">
+                        <div class="menu-item-title">Add Bookmark</div>
+                        <div class="menu-item-description">Save current page</div>
+                    </div>
+                </button>
+                <button class="menu-item" id="screenshotBtn">
+                    <i class="fas fa-camera"></i>
+                    <div class="menu-item-content">
+                        <div class="menu-item-title">Take Screenshot</div>
+                        <div class="menu-item-description">Capture current page</div>
+                    </div>
+                    <span class="menu-item-badge">Beta</span>
+                </button>
+                <button class="menu-item" id="fullscreenBtn">
+                    <i class="fas fa-expand"></i>
+                    <div class="menu-item-content">
+                        <div class="menu-item-title">Fullscreen Mode</div>
+                        <div class="menu-item-description">Enter fullscreen</div>
+                    </div>
+                </button>
+            </div>
+
+            <!-- View -->
+            <div class="menu-section">
+                <div class="menu-section-title">View</div>
+                <button class="menu-item" id="historyBtn">
+                    <i class="fas fa-clock-rotate-left"></i>
+                    <div class="menu-item-content">
+                        <div class="menu-item-title">History</div>
+                        <div class="menu-item-description">View browsing history</div>
+                    </div>
+                </button>
+                <button class="menu-item" id="bookmarksBtn">
+                    <i class="fas fa-star"></i>
+                    <div class="menu-item-content">
+                        <div class="menu-item-title">Bookmarks</div>
+                        <div class="menu-item-description">Manage saved pages</div>
+                    </div>
+                </button>
+            </div>
+
+            <!-- Appearance -->
+            <div class="menu-section">
+                <div class="menu-section-title">Appearance</div>
+                <button class="menu-item" id="themeMenuItem">
+                    <i class="fas fa-moon"></i>
+                    <div class="menu-item-content">
+                        <div class="menu-item-title">Dark Mode</div>
+                        <div class="menu-item-description">Toggle dark theme</div>
+                    </div>
+                    <div class="toggle-switch" id="themeToggle"></div>
+                </button>
+                <button class="menu-item" id="animationsMenuItem">
+                    <i class="fas fa-wand-magic-sparkles"></i>
+                    <div class="menu-item-content">
+                        <div class="menu-item-title">Animations</div>
+                        <div class="menu-item-description">Enable smooth animations</div>
+                    </div>
+                    <div class="toggle-switch active" id="animationsToggle"></div>
+                </button>
+            </div>
+
+            <!-- Settings -->
+            <div class="menu-section">
+                <div class="menu-section-title">Settings</div>
+                <button class="menu-item" id="homepageBtn">
+                    <i class="fas fa-house-chimney"></i>
+                    <div class="menu-item-content">
+                        <div class="menu-item-title">Set Homepage</div>
+                        <div class="menu-item-description">Configure default page</div>
+                    </div>
+                </button>
+                <button class="menu-item" id="searchEngineBtn">
+                    <i class="fas fa-magnifying-glass"></i>
+                    <div class="menu-item-content">
+                        <div class="menu-item-title">Search Engine</div>
+                        <div class="menu-item-description">Google</div>
+                    </div>
+                </button>
+                <button class="menu-item" id="privacyBtn">
+                    <i class="fas fa-shield-halved"></i>
+                    <div class="menu-item-content">
+                        <div class="menu-item-title">Privacy & Security</div>
+                        <div class="menu-item-description">Clear browsing data</div>
+                    </div>
+                </button>
+            </div>
+
+            <!-- Advanced -->
+            <div class="menu-section">
+                <div class="menu-section-title">Advanced</div>
+                <button class="menu-item" id="keyboardBtn">
+                    <i class="fas fa-keyboard"></i>
+                    <div class="menu-item-content">
+                        <div class="menu-item-title">Keyboard Shortcuts</div>
+                        <div class="menu-item-description">View all shortcuts</div>
+                    </div>
+                </button>
+                <button class="menu-item" id="aboutBtn">
+                    <i class="fas fa-circle-info"></i>
+                    <div class="menu-item-content">
+                        <div class="menu-item-title">About Browser</div>
+                        <div class="menu-item-description">Version & info</div>
+                    </div>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modals -->
+    <div class="modal" id="historyModal">
+        <div class="modal-header">
+            <h3>Browsing History</h3>
+        </div>
+        <div class="modal-body" id="historyList"></div>
+        <div class="modal-footer">
+            <button class="btn btn-secondary" id="closeHistoryBtn">Close</button>
+            <button class="btn btn-primary" id="clearHistoryBtn">Clear All</button>
+        </div>
+    </div>
+
+    <div class="modal" id="bookmarksModal">
+        <div class="modal-header">
+            <h3>Bookmarks</h3>
+        </div>
+        <div class="modal-body" id="bookmarksList"></div>
+        <div class="modal-footer">
+            <button class="btn btn-secondary" id="closeBookmarksBtn">Close</button>
+        </div>
+    </div>
+
+    <div class="modal" id="homepageModal">
+        <div class="modal-header">
+            <h3>Set Homepage</h3>
+        </div>
+        <div class="modal-body">
+            <div class="input-group">
+                <label>Homepage URL</label>
+                <input type="url" id="homepageInput" placeholder="https://example.com">
+            </div>
+            <div style="padding: 0 24px;">
+                <button class="btn btn-secondary" id="useCurrentBtn" style="width: 100%;">
+                    <i class="fas fa-link"></i> Use Current Page
+                </button>
+            </div>
+        </div>
+        <div class="modal-footer">
+            <button class="btn btn-secondary" id="cancelHomepageBtn">Cancel</button>
+            <button class="btn btn-primary" id="saveHomepageBtn">Save</button>
+        </div>
+    </div>
+
+    <div class="modal" id="searchEngineModal">
+        <div class="modal-header">
+            <h3>Search Engine</h3>
+        </div>
+        <div class="modal-body">
+            <div class="input-group">
+                <label>Select Search Engine</label>
+                <select id="searchEngineSelect">
+                    <option value="google">Google</option>
+                    <option value="bing">Bing</option>
+                    <option value="duckduckgo">DuckDuckGo</option>
+                    <option value="yahoo">Yahoo</option>
+                </select>
+            </div>
+        </div>
+        <div class="modal-footer">
+            <button class="btn btn-secondary" id="cancelSearchEngineBtn">Cancel</button>
+            <button class="btn btn-primary" id="saveSearchEngineBtn">Save</button>
+        </div>
+    </div>
+
+    <div class="modal" id="keyboardModal">
+        <div class="modal-header">
+            <h3>Keyboard Shortcuts</h3>
+        </div>
+        <div class="modal-body">
+            <div style="display: flex; flex-direction: column; gap: 12px;">
+                <div style="display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px solid var(--border-color);">
+                    <span>Focus URL bar</span>
+                    <code style="background: var(--url-bg); padding: 4px 8px; border-radius: 4px; font-family: 'JetBrains Mono', monospace; font-size: 12px;">Ctrl/Cmd + L</code>
+                </div>
+                <div style="display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px solid var(--border-color);">
+                    <span>Reload page</span>
+                    <code style="background: var(--url-bg); padding: 4px 8px; border-radius: 4px; font-family: 'JetBrains Mono', monospace; font-size: 12px;">Ctrl/Cmd + R</code>
+                </div>
+                <div style="display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px solid var(--border-color);">
+                    <span>Go back</span>
+                    <code style="background: var(--url-bg); padding: 4px 8px; border-radius: 4px; font-family: 'JetBrains Mono', monospace; font-size: 12px;">Alt + ←</code>
+                </div>
+                <div style="display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px solid var(--border-color);">
+                    <span>Go forward</span>
+                    <code style="background: var(--url-bg); padding: 4px 8px; border-radius: 4px; font-family: 'JetBrains Mono', monospace; font-size: 12px;">Alt + →</code>
+                </div>
+                <div style="display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px solid var(--border-color);">
+                    <span>Go to homepage</span>
+                    <code style="background: var(--url-bg); padding: 4px 8px; border-radius: 4px; font-family: 'JetBrains Mono', monospace; font-size: 12px;">Alt + Home</code>
+                </div>
+                <div style="display: flex; justify-content: space-between; padding: 8px 0;">
+                    <span>Fullscreen</span>
+                    <code style="background: var(--url-bg); padding: 4px 8px; border-radius: 4px; font-family: 'JetBrains Mono', monospace; font-size: 12px;">F11</code>
+                </div>
+            </div>
+        </div>
+        <div class="modal-footer">
+            <button class="btn btn-secondary" id="closeKeyboardBtn">Close</button>
+        </div>
+    </div>
+
+    <div class="modal" id="aboutModal">
+        <div class="modal-header">
+            <h3>About Browser</h3>
+        </div>
+        <div class="modal-body">
+            <div style="text-align: center; padding: 20px 0;">
+                <i class="fas fa-globe" style="font-size: 64px; color: var(--accent); margin-bottom: 16px;"></i>
+                <h4 style="font-size: 18px; margin-bottom: 8px;">Modern Browser</h4>
+                <p style="color: var(--text-secondary); margin-bottom: 16px;">Version 1.0.0</p>
+                <p style="color: var(--text-secondary); font-size: 14px; line-height: 1.6;">
+                    A sleek, modern iframe browser with powerful features and a beautiful interface.
+                    Built with HTML, CSS, and JavaScript.
+                </p>
+            </div>
+        </div>
+        <div class="modal-footer">
+            <button class="btn btn-secondary" id="closeAboutBtn">Close</button>
+        </div>
+    </div>
+
     <script>
+        // In-memory storage (since localStorage may not be available in iframe)
+        const storage = {
+            data: {
+                bookmarks: [],
+                homepage: 'https://tabtab-44wx.onrender.com/p/jd.html',
+                searchEngine: 'google',
+                animationsEnabled: true
+            },
+            get(key) {
+                return this.data[key];
+            },
+            set(key, value) {
+                this.data[key] = value;
+            }
+        };
+
         // Configuration
-        const HOME_URL = 'https://tabtab-44wx.onrender.com/p/jd.html';
+        let HOME_URL = storage.get('homepage');
+        let searchEngine = storage.get('searchEngine');
+        let bookmarks = storage.get('bookmarks');
+        let animationsEnabled = storage.get('animationsEnabled');
+
+        // Search engines
+        const searchEngines = {
+            google: 'https://www.google.com/search?q=',
+            bing: 'https://www.bing.com/search?q=',
+            duckduckgo: 'https://duckduckgo.com/?q=',
+            yahoo: 'https://search.yahoo.com/search?p='
+        };
 
         // Elements
         const urlBar = document.getElementById('urlBar');
@@ -411,36 +1024,78 @@
         const forwardBtn = document.getElementById('forwardBtn');
         const reloadBtn = document.getElementById('reloadBtn');
         const homeBtn = document.getElementById('homeBtn');
-        const themeToggle = document.getElementById('themeToggle');
+        const menuBtn = document.getElementById('menuBtn');
         const loadingIndicator = document.getElementById('loadingIndicator');
+        const menuOverlay = document.getElementById('menuOverlay');
+        const sideMenu = document.getElementById('sideMenu');
+        const menuClose = document.getElementById('menuClose');
 
         // History management
         let history = [];
         let currentIndex = -1;
 
         // Theme management
+        const themeToggle = document.getElementById('themeToggle');
+        const themeMenuItem = document.getElementById('themeMenuItem');
+        const themeIcon = themeMenuItem.querySelector('i');
+
         function initTheme() {
             if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
                 document.documentElement.classList.add('dark');
-                themeToggle.innerHTML = '<i class="fas fa-sun"></i>';
+                themeToggle.classList.add('active');
+                themeIcon.className = 'fas fa-sun';
             }
 
             window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', event => {
                 if (event.matches) {
                     document.documentElement.classList.add('dark');
-                    themeToggle.innerHTML = '<i class="fas fa-sun"></i>';
+                    themeToggle.classList.add('active');
+                    themeIcon.className = 'fas fa-sun';
                 } else {
                     document.documentElement.classList.remove('dark');
-                    themeToggle.innerHTML = '<i class="fas fa-moon"></i>';
+                    themeToggle.classList.remove('active');
+                    themeIcon.className = 'fas fa-moon';
                 }
             });
         }
 
-        themeToggle.addEventListener('click', () => {
+        themeMenuItem.addEventListener('click', () => {
             document.documentElement.classList.toggle('dark');
+            themeToggle.classList.toggle('active');
             const isDark = document.documentElement.classList.contains('dark');
-            themeToggle.innerHTML = isDark ? '<i class="fas fa-sun"></i>' : '<i class="fas fa-moon"></i>';
+            themeIcon.className = isDark ? 'fas fa-sun' : 'fas fa-moon';
         });
+
+        // Menu management
+        function openMenu() {
+            menuOverlay.classList.add('active');
+            sideMenu.classList.add('active');
+            document.body.style.overflow = 'hidden';
+        }
+
+        function closeMenu() {
+            menuOverlay.classList.remove('active');
+            sideMenu.classList.remove('active');
+            document.body.style.overflow = '';
+        }
+
+        menuBtn.addEventListener('click', openMenu);
+        menuClose.addEventListener('click', closeMenu);
+        menuOverlay.addEventListener('click', closeMenu);
+
+        // Modal management
+        function openModal(modalId) {
+            const modal = document.getElementById(modalId);
+            menuOverlay.classList.add('active');
+            modal.classList.add('active');
+            closeMenu();
+        }
+
+        function closeModal(modalId) {
+            const modal = document.getElementById(modalId);
+            menuOverlay.classList.remove('active');
+            modal.classList.remove('active');
+        }
 
         // URL validation and formatting
         function formatUrl(input) {
@@ -456,7 +1111,7 @@
             }
 
             // Otherwise, treat as search query
-            return 'https://www.google.com/search?q=' + encodeURIComponent(input);
+            return searchEngines[searchEngine] + encodeURIComponent(input);
         }
 
         // Navigate to URL
@@ -552,6 +1207,223 @@
             loadingIndicator.classList.remove('active');
         });
 
+        // Quick Actions
+        document.getElementById('newTabBtn').addEventListener('click', () => {
+            navigateTo(HOME_URL);
+            closeMenu();
+        });
+
+        document.getElementById('bookmarkBtn').addEventListener('click', () => {
+            const currentUrl = browserIframe.src;
+            if (currentUrl && !bookmarks.some(b => b.url === currentUrl)) {
+                bookmarks.push({
+                    title: currentUrl.split('/')[2] || 'Bookmark',
+                    url: currentUrl,
+                    date: new Date().toISOString()
+                });
+                storage.set('bookmarks', bookmarks);
+                showNotification('Bookmark added!');
+            } else {
+                showNotification('Already bookmarked');
+            }
+            closeMenu();
+        });
+
+        document.getElementById('screenshotBtn').addEventListener('click', () => {
+            showNotification('Screenshot feature coming soon!');
+            closeMenu();
+        });
+
+        document.getElementById('fullscreenBtn').addEventListener('click', () => {
+            if (!document.fullscreenElement) {
+                document.documentElement.requestFullscreen();
+            } else {
+                document.exitFullscreen();
+            }
+            closeMenu();
+        });
+
+        // View
+        document.getElementById('historyBtn').addEventListener('click', () => {
+            renderHistory();
+            openModal('historyModal');
+        });
+
+        document.getElementById('bookmarksBtn').addEventListener('click', () => {
+            renderBookmarks();
+            openModal('bookmarksModal');
+        });
+
+        // Animations toggle
+        const animationsToggle = document.getElementById('animationsToggle');
+        document.getElementById('animationsMenuItem').addEventListener('click', () => {
+            animationsToggle.classList.toggle('active');
+            animationsEnabled = animationsToggle.classList.contains('active');
+            storage.set('animationsEnabled', animationsEnabled);
+            if (!animationsEnabled) {
+                document.body.style.setProperty('--transition-speed', '0s');
+            } else {
+                document.body.style.removeProperty('--transition-speed');
+            }
+        });
+
+        // Settings
+        document.getElementById('homepageBtn').addEventListener('click', () => {
+            document.getElementById('homepageInput').value = HOME_URL;
+            openModal('homepageModal');
+        });
+
+        document.getElementById('useCurrentBtn').addEventListener('click', () => {
+            document.getElementById('homepageInput').value = browserIframe.src || HOME_URL;
+        });
+
+        document.getElementById('saveHomepageBtn').addEventListener('click', () => {
+            const newHomepage = document.getElementById('homepageInput').value.trim();
+            if (newHomepage) {
+                HOME_URL = newHomepage;
+                storage.set('homepage', HOME_URL);
+                showNotification('Homepage updated!');
+                closeModal('homepageModal');
+            }
+        });
+
+        document.getElementById('cancelHomepageBtn').addEventListener('click', () => {
+            closeModal('homepageModal');
+        });
+
+        document.getElementById('searchEngineBtn').addEventListener('click', () => {
+            document.getElementById('searchEngineSelect').value = searchEngine;
+            openModal('searchEngineModal');
+        });
+
+        document.getElementById('saveSearchEngineBtn').addEventListener('click', () => {
+            searchEngine = document.getElementById('searchEngineSelect').value;
+            storage.set('searchEngine', searchEngine);
+            const engineName = searchEngine.charAt(0).toUpperCase() + searchEngine.slice(1);
+            document.querySelector('#searchEngineBtn .menu-item-description').textContent = engineName;
+            showNotification('Search engine updated!');
+            closeModal('searchEngineModal');
+        });
+
+        document.getElementById('cancelSearchEngineBtn').addEventListener('click', () => {
+            closeModal('searchEngineModal');
+        });
+
+        document.getElementById('privacyBtn').addEventListener('click', () => {
+            if (showConfirmDialog('Clear all browsing history and bookmarks?')) {
+                history = [];
+                currentIndex = -1;
+                bookmarks = [];
+                storage.set('bookmarks', []);
+                updateNavigationButtons();
+                showNotification('Browsing data cleared');
+                closeMenu();
+            }
+        });
+
+        // Advanced
+        document.getElementById('keyboardBtn').addEventListener('click', () => {
+            openModal('keyboardModal');
+        });
+
+        document.getElementById('aboutBtn').addEventListener('click', () => {
+            openModal('aboutModal');
+        });
+
+        // Modal close buttons
+        document.getElementById('closeHistoryBtn').addEventListener('click', () => closeModal('historyModal'));
+        document.getElementById('clearHistoryBtn').addEventListener('click', () => {
+            if (showConfirmDialog('Clear all browsing history?')) {
+                history = [];
+                currentIndex = -1;
+                updateNavigationButtons();
+                renderHistory();
+                showNotification('History cleared');
+            }
+        });
+        document.getElementById('closeBookmarksBtn').addEventListener('click', () => closeModal('bookmarksModal'));
+        document.getElementById('closeKeyboardBtn').addEventListener('click', () => closeModal('keyboardModal'));
+        document.getElementById('closeAboutBtn').addEventListener('click', () => closeModal('aboutModal'));
+
+        // Render functions
+        function renderHistory() {
+            const container = document.getElementById('historyList');
+            if (history.length === 0) {
+                container.innerHTML = '<div class="empty-state"><i class="fas fa-clock-rotate-left"></i><p>No browsing history</p></div>';
+                return;
+            }
+            container.innerHTML = history.slice().reverse().map(url => `
+                <div class="list-item">
+                    <i class="fas fa-link"></i>
+                    <div class="list-item-content">
+                        <div class="list-item-title">${url.split('/')[2] || url}</div>
+                        <div class="list-item-url">${url}</div>
+                    </div>
+                    <button class="list-item-action" onclick="navigateTo('${url.replace(/'/g, "\\'")}'); closeModal('historyModal');">
+                        <i class="fas fa-arrow-up-right-from-square"></i>
+                    </button>
+                </div>
+            `).join('');
+        }
+
+        function renderBookmarks() {
+            const container = document.getElementById('bookmarksList');
+            if (bookmarks.length === 0) {
+                container.innerHTML = '<div class="empty-state"><i class="fas fa-star"></i><p>No bookmarks saved</p></div>';
+                return;
+            }
+            container.innerHTML = bookmarks.map((bookmark, index) => `
+                <div class="list-item">
+                    <i class="fas fa-bookmark"></i>
+                    <div class="list-item-content">
+                        <div class="list-item-title">${bookmark.title}</div>
+                        <div class="list-item-url">${bookmark.url}</div>
+                    </div>
+                    <button class="list-item-action" onclick="navigateTo('${bookmark.url.replace(/'/g, "\\'")}'); closeModal('bookmarksModal');">
+                        <i class="fas fa-arrow-up-right-from-square"></i>
+                    </button>
+                    <button class="list-item-action" onclick="removeBookmark(${index})">
+                        <i class="fas fa-trash"></i>
+                    </button>
+                </div>
+            `).join('');
+        }
+
+        function removeBookmark(index) {
+            bookmarks.splice(index, 1);
+            storage.set('bookmarks', bookmarks);
+            renderBookmarks();
+        }
+
+        // Notification system
+        function showNotification(message) {
+            const notification = document.createElement('div');
+            notification.style.cssText = `
+                position: fixed;
+                bottom: 24px;
+                left: 50%;
+                transform: translateX(-50%);
+                background: var(--text-primary);
+                color: var(--bg-toolbar);
+                padding: 12px 24px;
+                border-radius: 8px;
+                font-size: 14px;
+                z-index: 1000;
+                animation: fadeIn 0.3s ease;
+            `;
+            notification.textContent = message;
+            document.body.appendChild(notification);
+            setTimeout(() => {
+                notification.style.animation = 'fadeOut 0.3s ease';
+                setTimeout(() => notification.remove(), 300);
+            }, 2000);
+        }
+
+        // Custom confirm dialog
+        function showConfirmDialog(message) {
+            return window.confirm(message);
+        }
+
         // Keyboard shortcuts
         document.addEventListener('keydown', (e) => {
             // Ctrl/Cmd + R: Reload
@@ -582,6 +1454,22 @@
             if (e.altKey && e.key === 'Home') {
                 e.preventDefault();
                 homeBtn.click();
+            }
+
+            // F11: Fullscreen
+            if (e.key === 'F11') {
+                e.preventDefault();
+                document.getElementById('fullscreenBtn').click();
+            }
+
+            // Escape: Close menu/modals
+            if (e.key === 'Escape') {
+                if (sideMenu.classList.contains('active')) {
+                    closeMenu();
+                }
+                document.querySelectorAll('.modal.active').forEach(modal => {
+                    closeModal(modal.id);
+                });
             }
         });
 

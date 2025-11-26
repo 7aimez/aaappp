@@ -1,0 +1,599 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Browser</title>
+    <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root {
+            --bg-primary: #f8f9fa;
+            --bg-secondary: #ffffff;
+            --bg-toolbar: #ffffff;
+            --text-primary: #1a1a1a;
+            --text-secondary: #6c757d;
+            --border-color: #dee2e6;
+            --accent: #0066cc;
+            --accent-hover: #0052a3;
+            --shadow: rgba(0, 0, 0, 0.08);
+            --shadow-lg: rgba(0, 0, 0, 0.12);
+            --button-hover: #f1f3f5;
+            --url-bg: #f8f9fa;
+        }
+
+        .dark {
+            --bg-primary: #0d1117;
+            --bg-secondary: #161b22;
+            --bg-toolbar: #1c2128;
+            --text-primary: #e6edf3;
+            --text-secondary: #8b949e;
+            --border-color: #30363d;
+            --accent: #58a6ff;
+            --accent-hover: #79b8ff;
+            --shadow: rgba(0, 0, 0, 0.3);
+            --shadow-lg: rgba(0, 0, 0, 0.5);
+            --button-hover: #30363d;
+            --url-bg: #0d1117;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'IBM Plex Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            overflow: hidden;
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .browser-container {
+            display: flex;
+            flex-direction: column;
+            height: 100vh;
+            background: var(--bg-secondary);
+        }
+
+        /* Toolbar */
+        .toolbar {
+            background: var(--bg-toolbar);
+            border-bottom: 1px solid var(--border-color);
+            padding: 12px 16px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            box-shadow: 0 2px 8px var(--shadow);
+            z-index: 10;
+            animation: slideDown 0.3s ease-out;
+        }
+
+        @keyframes slideDown {
+            from {
+                opacity: 0;
+                transform: translateY(-10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        /* Navigation Buttons */
+        .nav-buttons {
+            display: flex;
+            gap: 4px;
+        }
+
+        .nav-btn {
+            width: 36px;
+            height: 36px;
+            border: none;
+            background: transparent;
+            color: var(--text-primary);
+            border-radius: 8px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.2s ease;
+            font-size: 16px;
+        }
+
+        .nav-btn:hover {
+            background: var(--button-hover);
+        }
+
+        .nav-btn:active {
+            transform: scale(0.95);
+        }
+
+        .nav-btn:disabled {
+            opacity: 0.3;
+            cursor: not-allowed;
+        }
+
+        .nav-btn:disabled:hover {
+            background: transparent;
+        }
+
+        /* URL Bar Container */
+        .url-container {
+            flex: 1;
+            display: flex;
+            align-items: center;
+            background: var(--url-bg);
+            border: 1.5px solid var(--border-color);
+            border-radius: 12px;
+            padding: 0 12px;
+            transition: all 0.2s ease;
+            position: relative;
+        }
+
+        .url-container:focus-within {
+            border-color: var(--accent);
+            box-shadow: 0 0 0 3px rgba(0, 102, 204, 0.1);
+        }
+
+        .dark .url-container:focus-within {
+            box-shadow: 0 0 0 3px rgba(88, 166, 255, 0.15);
+        }
+
+        .url-icon {
+            color: var(--text-secondary);
+            margin-right: 8px;
+            font-size: 14px;
+        }
+
+        .url-bar {
+            flex: 1;
+            border: none;
+            background: transparent;
+            color: var(--text-primary);
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 16px;
+            outline: none;
+            padding: 10px 0;
+        }
+
+        .url-bar::placeholder {
+            color: var(--text-secondary);
+            opacity: 0.6;
+        }
+
+        /* Loading Indicator */
+        .loading-indicator {
+            position: absolute;
+            bottom: -2px;
+            left: 0;
+            right: 0;
+            height: 2px;
+            background: var(--accent);
+            transform: scaleX(0);
+            transform-origin: left;
+            transition: transform 0.3s ease;
+        }
+
+        .loading-indicator.active {
+            animation: loading 1.5s ease-in-out infinite;
+        }
+
+        @keyframes loading {
+            0% {
+                transform: scaleX(0);
+                transform-origin: left;
+            }
+            50% {
+                transform: scaleX(1);
+                transform-origin: left;
+            }
+            51% {
+                transform: scaleX(1);
+                transform-origin: right;
+            }
+            100% {
+                transform: scaleX(0);
+                transform-origin: right;
+            }
+        }
+
+        /* Action Buttons */
+        .action-buttons {
+            display: flex;
+            gap: 4px;
+        }
+
+        .action-btn {
+            width: 36px;
+            height: 36px;
+            border: none;
+            background: transparent;
+            color: var(--text-primary);
+            border-radius: 8px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.2s ease;
+            font-size: 16px;
+        }
+
+        .action-btn:hover {
+            background: var(--button-hover);
+        }
+
+        .action-btn:active {
+            transform: scale(0.95);
+        }
+
+        /* Theme Toggle */
+        .theme-toggle {
+            width: 36px;
+            height: 36px;
+            border: none;
+            background: transparent;
+            color: var(--text-primary);
+            border-radius: 8px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.2s ease;
+            font-size: 16px;
+        }
+
+        .theme-toggle:hover {
+            background: var(--button-hover);
+            transform: rotate(20deg);
+        }
+
+        /* Browser Frame */
+        .browser-frame {
+            flex: 1;
+            position: relative;
+            background: var(--bg-primary);
+            overflow: hidden;
+        }
+
+        .browser-iframe {
+            width: 100%;
+            height: 100%;
+            border: none;
+            display: block;
+        }
+
+        /* Error Message */
+        .error-message {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            text-align: center;
+            color: var(--text-secondary);
+            padding: 32px;
+            max-width: 400px;
+        }
+
+        .error-message i {
+            font-size: 48px;
+            margin-bottom: 16px;
+            opacity: 0.5;
+        }
+
+        .error-message h2 {
+            font-size: 20px;
+            margin-bottom: 8px;
+            color: var(--text-primary);
+        }
+
+        .error-message p {
+            font-size: 14px;
+            line-height: 1.6;
+        }
+
+        /* Responsive */
+        @media (max-width: 640px) {
+            .toolbar {
+                padding: 10px 12px;
+                gap: 6px;
+            }
+
+            .nav-btn, .action-btn, .theme-toggle {
+                width: 32px;
+                height: 32px;
+                font-size: 14px;
+            }
+
+            .url-container {
+                padding: 0 10px;
+            }
+
+            .url-bar {
+                font-size: 16px;
+                padding: 8px 0;
+            }
+
+            .url-icon {
+                font-size: 12px;
+            }
+        }
+
+        /* Tooltip */
+        [data-tooltip] {
+            position: relative;
+        }
+
+        [data-tooltip]:hover::after {
+            content: attr(data-tooltip);
+            position: absolute;
+            bottom: -32px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: var(--text-primary);
+            color: var(--bg-toolbar);
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 12px;
+            white-space: nowrap;
+            z-index: 100;
+            animation: fadeIn 0.2s ease;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+    </style>
+</head>
+<body>
+    <div class="browser-container">
+        <!-- Toolbar -->
+        <div class="toolbar">
+            <div class="nav-buttons">
+                <button class="nav-btn" id="backBtn" data-tooltip="Back" disabled>
+                    <i class="fas fa-arrow-left"></i>
+                </button>
+                <button class="nav-btn" id="forwardBtn" data-tooltip="Forward" disabled>
+                    <i class="fas fa-arrow-right"></i>
+                </button>
+                <button class="nav-btn" id="reloadBtn" data-tooltip="Reload">
+                    <i class="fas fa-rotate-right"></i>
+                </button>
+            </div>
+
+            <div class="url-container">
+                <i class="fas fa-globe url-icon"></i>
+                <input
+                    type="text"
+                    class="url-bar"
+                    id="urlBar"
+                    placeholder="Enter URL or search..."
+                    autocomplete="off"
+                    spellcheck="false"
+                >
+                <div class="loading-indicator" id="loadingIndicator"></div>
+            </div>
+
+            <div class="action-buttons">
+                <button class="action-btn" id="homeBtn" data-tooltip="Home">
+                    <i class="fas fa-house"></i>
+                </button>
+                <button class="theme-toggle" id="themeToggle" data-tooltip="Toggle Theme">
+                    <i class="fas fa-moon"></i>
+                </button>
+            </div>
+        </div>
+
+        <!-- Browser Frame -->
+        <div class="browser-frame">
+            <iframe
+                class="browser-iframe"
+                id="browserIframe"
+                sandbox="allow-scripts allow-same-origin allow-popups allow-forms allow-popups-to-escape-sandbox"
+                allowfullscreen
+            ></iframe>
+        </div>
+    </div>
+
+    <script>
+        // Configuration
+        const HOME_URL = 'https://tabtab-44wx.onrender.com/p/jd.html';
+
+        // Elements
+        const urlBar = document.getElementById('urlBar');
+        const browserIframe = document.getElementById('browserIframe');
+        const backBtn = document.getElementById('backBtn');
+        const forwardBtn = document.getElementById('forwardBtn');
+        const reloadBtn = document.getElementById('reloadBtn');
+        const homeBtn = document.getElementById('homeBtn');
+        const themeToggle = document.getElementById('themeToggle');
+        const loadingIndicator = document.getElementById('loadingIndicator');
+
+        // History management
+        let history = [];
+        let currentIndex = -1;
+
+        // Theme management
+        function initTheme() {
+            if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
+                document.documentElement.classList.add('dark');
+                themeToggle.innerHTML = '<i class="fas fa-sun"></i>';
+            }
+
+            window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', event => {
+                if (event.matches) {
+                    document.documentElement.classList.add('dark');
+                    themeToggle.innerHTML = '<i class="fas fa-sun"></i>';
+                } else {
+                    document.documentElement.classList.remove('dark');
+                    themeToggle.innerHTML = '<i class="fas fa-moon"></i>';
+                }
+            });
+        }
+
+        themeToggle.addEventListener('click', () => {
+            document.documentElement.classList.toggle('dark');
+            const isDark = document.documentElement.classList.contains('dark');
+            themeToggle.innerHTML = isDark ? '<i class="fas fa-sun"></i>' : '<i class="fas fa-moon"></i>';
+        });
+
+        // URL validation and formatting
+        function formatUrl(input) {
+            input = input.trim();
+
+            // If it looks like a URL
+            if (input.includes('.') && !input.includes(' ')) {
+                // Add protocol if missing
+                if (!input.startsWith('http://') && !input.startsWith('https://')) {
+                    return 'https://' + input;
+                }
+                return input;
+            }
+
+            // Otherwise, treat as search query
+            return 'https://www.google.com/search?q=' + encodeURIComponent(input);
+        }
+
+        // Navigate to URL
+        function navigateTo(url, addToHistory = true) {
+            const formattedUrl = formatUrl(url);
+
+            // Show loading
+            loadingIndicator.classList.add('active');
+
+            // Update iframe
+            browserIframe.src = formattedUrl;
+
+            // Update URL bar
+            urlBar.value = formattedUrl;
+
+            // Manage history
+            if (addToHistory) {
+                // Remove forward history when navigating to new page
+                history = history.slice(0, currentIndex + 1);
+                history.push(formattedUrl);
+                currentIndex = history.length - 1;
+                updateNavigationButtons();
+            }
+
+            // Remove loading after delay
+            setTimeout(() => {
+                loadingIndicator.classList.remove('active');
+            }, 1000);
+        }
+
+        // Update navigation buttons state
+        function updateNavigationButtons() {
+            backBtn.disabled = currentIndex <= 0;
+            forwardBtn.disabled = currentIndex >= history.length - 1;
+        }
+
+        // Back navigation
+        backBtn.addEventListener('click', () => {
+            if (currentIndex > 0) {
+                currentIndex--;
+                navigateTo(history[currentIndex], false);
+                updateNavigationButtons();
+            }
+        });
+
+        // Forward navigation
+        forwardBtn.addEventListener('click', () => {
+            if (currentIndex < history.length - 1) {
+                currentIndex++;
+                navigateTo(history[currentIndex], false);
+                updateNavigationButtons();
+            }
+        });
+
+        // Reload
+        reloadBtn.addEventListener('click', () => {
+            loadingIndicator.classList.add('active');
+            const currentSrc = browserIframe.src;
+            browserIframe.src = currentSrc;
+
+            // Animate reload button
+            reloadBtn.style.transform = 'rotate(360deg)';
+            setTimeout(() => {
+                reloadBtn.style.transform = '';
+                loadingIndicator.classList.remove('active');
+            }, 500);
+        });
+
+        // Home button
+        homeBtn.addEventListener('click', () => {
+            navigateTo(HOME_URL);
+        });
+
+        // URL bar submit
+        urlBar.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') {
+                navigateTo(urlBar.value);
+                urlBar.blur();
+            }
+        });
+
+        // Select all on focus
+        urlBar.addEventListener('focus', () => {
+            urlBar.select();
+        });
+
+        // Initialize
+        initTheme();
+        navigateTo(HOME_URL);
+
+        // Handle iframe load events
+        browserIframe.addEventListener('load', () => {
+            loadingIndicator.classList.remove('active');
+        });
+
+        // Keyboard shortcuts
+        document.addEventListener('keydown', (e) => {
+            // Ctrl/Cmd + R: Reload
+            if ((e.ctrlKey || e.metaKey) && e.key === 'r') {
+                e.preventDefault();
+                reloadBtn.click();
+            }
+
+            // Ctrl/Cmd + L: Focus URL bar
+            if ((e.ctrlKey || e.metaKey) && e.key === 'l') {
+                e.preventDefault();
+                urlBar.focus();
+            }
+
+            // Alt + Left: Back
+            if (e.altKey && e.key === 'ArrowLeft') {
+                e.preventDefault();
+                backBtn.click();
+            }
+
+            // Alt + Right: Forward
+            if (e.altKey && e.key === 'ArrowRight') {
+                e.preventDefault();
+                forwardBtn.click();
+            }
+
+            // Alt + Home: Home
+            if (e.altKey && e.key === 'Home') {
+                e.preventDefault();
+                homeBtn.click();
+            }
+        });
+
+        // Prevent zoom on double tap
+        let lastTouchEnd = 0;
+        document.addEventListener('touchend', (e) => {
+            const now = Date.now();
+            if (now - lastTouchEnd <= 300) {
+                e.preventDefault();
+            }
+            lastTouchEnd = now;
+        }, false);
+    </script>
+</body>
+</html>

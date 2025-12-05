@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Error</title>
+    <style>
+        html {
+            overflow: hidden;
+        }
+        body {
+            margin: 0;
+            font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", sans-serif;
+            background: #f5f5f7;
+            color: #111;
+        }
+
+        .spacer {
+            height: 100vh;
+            /* big empty space so you scroll */
+        }
+
+        .message {
+            max-width: 600px;
+            margin: 0 auto;
+            padding: 40px;
+            background: #fff;
+            border-radius: 20px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+        }
+
+        h1 {
+            font-size: 22px;
+            font-weight: 600;
+            margin-bottom: 10px;
+        }
+
+        p {
+            color: #666;
+            margin-bottom: 20px;
+        }
+
+        pre {
+            background: #111;
+            color: #eee;
+            padding: 20px;
+            border-radius: 12px;
+            overflow-x: auto;
+            font-size: 13px;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="spacer"></div>
+    <div class="message">
+        <h1>Your iPad has run into a problem</h1>
+        <p>Please try again later.</p>
+        <pre>
+Error Code: E-IPAD-001
+Details: Unexpected system exception
+Stack Trace:
+  at SpringBoard.main()
+  at UIKit.runLoop()
+    </pre>
+    </div>
+
+    <br><br><br><br><br><br><br>
+</body>
+
+</html>

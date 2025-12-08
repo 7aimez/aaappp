@@ -1,0 +1,263 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Neon Word Clock</title>
+    <link href="https://fonts.googleapis.com/css2?family=Chakra+Petch:wght:600;700&display=swap" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Chakra Petch', sans-serif;
+            background: #000000;
+            color: white;
+            width: 100vw;
+            height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            overflow: hidden;
+        }
+
+        .word-grid {
+            display: grid;
+            grid-template-columns: repeat(11, 1fr);
+            grid-template-rows: repeat(15, 1fr);
+            gap: clamp(0.5vw, 1vw, 2vw);
+            width: 100vw;
+            height: 100vh;
+            padding: clamp(1vw, 2vw, 3vw);
+        }
+
+        .letter {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: clamp(1.5rem, 5.5vmin, 6rem);
+            font-weight: 700;
+            color: rgba(255, 255, 255, 0.1);
+            transition: all 0.5s ease;
+            user-select: none;
+        }
+
+        .letter.active {
+            color: #00ffff;
+            text-shadow:
+                0 0 20px #00ffff,
+                0 0 40px #00ffff;
+        }
+
+        .letter.seconds {
+            font-size: clamp(2rem, 8vmin, 10rem);
+            color: #ff00ff;
+            text-shadow:
+                0 0 25px #ff00ff,
+                0 0 50px #ff00ff;
+        }
+
+        @media (max-width: 768px) {
+            .word-grid {
+                gap: clamp(0.3vw, 0.8vw, 1.5vw);
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="word-grid" id="wordGrid"></div>
+
+    <script>
+        // Define the letter grid layout
+        const gridLayout = [
+            'ITLISASTIME',
+            'ACQUARTERDC',
+            'TWENTYFIVEX',
+            'HALFBTENXTO',
+            'PASTRUNINEG',
+            'ONESIXTHREE',
+            'FOURFIVEXWO',
+            'EIGHTELEVEN',
+            'SEVENTWELVE',
+            'TENXTWENTYO',
+            'THIRTYXFIVE',
+            'FORTYXFIFTY',
+            'OCLOCKXNITE',
+            'XXXXXXXXXXX', // separator
+            'XXXXXSXXXXX'  // seconds row (will be replaced)
+        ];
+
+        // Mapping of words to their positions [row, startCol, length]
+        const wordPositions = {
+            'IT': [0, 0, 2],
+            'IS': [0, 3, 2],
+            'A': [1, 0, 1],
+            'QUARTER': [1, 2, 7],
+            'TWENTY': [2, 0, 6],
+            'FIVE': [2, 6, 4],
+            'HALF': [3, 0, 4],
+            'TEN': [3, 6, 3],
+            'TO': [3, 9, 2],
+            'PAST': [4, 0, 4],
+            'NINE': [4, 8, 4],
+            'ONE': [5, 0, 3],
+            'SIX': [5, 3, 3],
+            'THREE': [5, 6, 5],
+            'FOUR': [6, 0, 4],
+            'FIVE_HOUR': [6, 4, 4],
+            'TWO': [6, 9, 3],
+            'EIGHT': [7, 0, 5],
+            'ELEVEN': [7, 5, 6],
+            'SEVEN': [8, 0, 5],
+            'TWELVE': [8, 5, 6],
+            'TEN_MINUTES': [9, 0, 3],
+            'TWENTY_MINUTES': [9, 4, 6],
+            'THIRTY': [10, 0, 6],
+            'FIVE_MINUTES': [10, 7, 4],
+            'FORTY': [11, 0, 5],
+            'FIFTY': [11, 6, 5],
+            'OCLOCK': [12, 0, 6]
+        };
+
+        // Generate grid
+        const gridContainer = document.getElementById('wordGrid');
+        const letters = [];
+
+        gridLayout.forEach((row, rowIndex) => {
+            [...row].forEach((letter, colIndex) => {
+                const letterDiv = document.createElement('div');
+                letterDiv.className = 'letter';
+                letterDiv.textContent = letter;
+                letterDiv.dataset.row = rowIndex;
+                letterDiv.dataset.col = colIndex;
+                gridContainer.appendChild(letterDiv);
+                letters.push(letterDiv);
+            });
+        });
+
+        function activateWords(wordKeys) {
+            // Deactivate all time letters (not seconds)
+            letters.forEach((letter, index) => {
+                const row = Math.floor(index / 11);
+                if (row < 14) {
+                    letter.classList.remove('active');
+                }
+            });
+
+            // Activate specified words
+            wordKeys.forEach(key => {
+                const pos = wordPositions[key];
+                if (pos) {
+                    const [row, startCol, length] = pos;
+                    for (let i = 0; i < length; i++) {
+                        const letter = letters[row * 11 + startCol + i];
+                        if (letter) {
+                            letter.classList.add('active');
+                        }
+                    }
+                }
+            });
+        }
+
+        function getTimeWords(hours, minutes) {
+            const words = ['IT', 'IS'];
+
+            // Handle minutes
+            if (minutes >= 0 && minutes < 5) {
+                // O'clock or hour only
+            } else if (minutes >= 5 && minutes < 10) {
+                words.push('FIVE_MINUTES', 'PAST');
+            } else if (minutes >= 10 && minutes < 15) {
+                words.push('TEN_MINUTES', 'PAST');
+            } else if (minutes >= 15 && minutes < 20) {
+                words.push('QUARTER', 'PAST');
+            } else if (minutes >= 20 && minutes < 25) {
+                words.push('TWENTY_MINUTES', 'PAST');
+            } else if (minutes >= 25 && minutes < 30) {
+                words.push('TWENTY_MINUTES', 'FIVE_MINUTES', 'PAST');
+            } else if (minutes >= 30 && minutes < 35) {
+                words.push('HALF', 'PAST');
+            } else if (minutes >= 35 && minutes < 40) {
+                words.push('TWENTY_MINUTES', 'FIVE_MINUTES', 'TO');
+            } else if (minutes >= 40 && minutes < 45) {
+                words.push('TWENTY_MINUTES', 'TO');
+            } else if (minutes >= 45 && minutes < 50) {
+                words.push('QUARTER', 'TO');
+            } else if (minutes >= 50 && minutes < 55) {
+                words.push('TEN_MINUTES', 'TO');
+            } else if (minutes >= 55) {
+                words.push('FIVE_MINUTES', 'TO');
+            }
+
+            // Determine which hour to display
+            let displayHour = hours % 12;
+            if (displayHour === 0) displayHour = 12;
+
+            // If minutes >= 35, show next hour
+            if (minutes >= 35) {
+                displayHour = (displayHour % 12) + 1;
+            }
+
+            // Add hour word
+            const hourWords = {
+                1: 'ONE', 2: 'TWO', 3: 'THREE', 4: 'FOUR',
+                5: 'FIVE_HOUR', 6: 'SIX', 7: 'SEVEN', 8: 'EIGHT',
+                9: 'NINE', 10: 'TEN', 11: 'ELEVEN', 12: 'TWELVE'
+            };
+            words.push(hourWords[displayHour]);
+
+            // Add O'CLOCK if it's on the hour
+            if (minutes < 5) {
+                words.push('OCLOCK');
+            }
+
+            return words;
+        }
+
+        function updateSeconds(seconds) {
+            const secondsStr = seconds.toString().padStart(2, '0');
+
+            // Update seconds in row 14 (centered)
+            const secondsRow = 14;
+            const startCol = 3; // Center the 2 digits (with spacing)
+
+            // Clear previous seconds
+            for (let col = 0; col < 11; col++) {
+                const index = secondsRow * 11 + col;
+                letters[index].textContent = '';
+                letters[index].classList.remove('seconds');
+            }
+
+            // Display new seconds
+            [...secondsStr].forEach((digit, i) => {
+                const col = startCol + (i * 3); // Space out the digits
+                const index = secondsRow * 11 + col;
+                letters[index].textContent = digit;
+                letters[index].classList.add('seconds');
+            });
+        }
+
+        function updateClock() {
+            const now = new Date();
+            const hours = now.getHours();
+            const minutes = now.getMinutes();
+            const seconds = now.getSeconds();
+
+            // Update word grid
+            const activeWords = getTimeWords(hours, minutes);
+            activateWords(activeWords);
+
+            // Update seconds
+            updateSeconds(seconds);
+        }
+
+        // Initial update and set interval
+        updateClock();
+        setInterval(updateClock, 100);
+    </script>
+</body>
+</html>
+

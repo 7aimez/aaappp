@@ -1,0 +1,662 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>KebabTater | Christmas Team 2025</title>
+    <link href="https://fonts.googleapis.com/css2?family=Archivo+Black&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <style>
+        :root {
+            --kebab-brown: #8B4513;
+            --potato-gold: #DAA520;
+            --christmas-red: #C41E3A;
+            --christmas-green: #228B22;
+            --snow-white: #FFFAFA;
+            --dark-bg: #0D0D0D;
+            --accent-orange: #FF6B35;
+            --spice-yellow: #FFD93D;
+        }
+
+        .dark {
+            --bg-primary: #0D0D0D;
+            --bg-secondary: #1A1A1A;
+            --text-primary: #FFFAFA;
+            --text-secondary: #B0B0B0;
+        }
+
+        html:not(.dark) {
+            --bg-primary: #FDF5E6;
+            --bg-secondary: #FFF8DC;
+            --text-primary: #1A1A1A;
+            --text-secondary: #4A4A4A;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Space Mono', monospace;
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            overflow-x: hidden;
+            min-height: 100vh;
+        }
+
+        /* Animated Background */
+        .bg-pattern {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 0;
+            opacity: 0.12;
+            background-image:
+                radial-gradient(circle at 20% 30%, var(--christmas-red) 2px, transparent 2px),
+                radial-gradient(circle at 80% 70%, var(--christmas-green) 2px, transparent 2px);
+            background-size: 60px 60px, 80px 80px;
+            animation: patternMove 20s linear infinite;
+        }
+
+        @keyframes patternMove {
+            0% { transform: translate(0, 0); }
+            100% { transform: translate(60px, 60px); }
+        }
+
+        /* Snowflakes */
+        .snowflakes {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 1;
+            overflow: hidden;
+        }
+
+        .snowflake {
+            position: absolute;
+            color: var(--snow-white);
+            font-size: 1rem;
+            opacity: 0.7;
+            animation: fall linear infinite;
+        }
+
+        @keyframes fall {
+            0% { transform: translateY(-10vh) rotate(0deg); }
+            100% { transform: translateY(110vh) rotate(360deg); }
+        }
+
+        /* Navigation */
+        nav {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            padding: 1.5rem 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            z-index: 100;
+            background: linear-gradient(180deg, var(--bg-primary) 0%, transparent 100%);
+        }
+
+        .logo {
+            font-family: 'Archivo Black', sans-serif;
+            font-size: 1.6rem;
+            background: linear-gradient(135deg, var(--accent-orange), var(--spice-yellow), var(--christmas-red));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .nav-links {
+            display: flex;
+            gap: 2rem;
+            list-style: none;
+        }
+
+        .nav-links a {
+            color: var(--text-primary);
+            text-decoration: none;
+            font-weight: 700;
+            font-size: 0.85rem;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+            transition: color 0.3s;
+        }
+
+        .nav-links a:hover {
+            color: var(--potato-gold);
+        }
+
+        /* Hero Section */
+        .hero {
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            position: relative;
+            padding: 2rem;
+            text-align: center;
+        }
+
+        .hero-content {
+            z-index: 10;
+        }
+
+        .hero-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            background: linear-gradient(135deg, var(--christmas-red), var(--kebab-brown));
+            color: white;
+            padding: 0.5rem 1.5rem;
+            border-radius: 50px;
+            font-size: 0.8rem;
+            font-weight: 700;
+            letter-spacing: 3px;
+            text-transform: uppercase;
+            margin-bottom: 1.5rem;
+            animation: pulse 2s ease-in-out infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { box-shadow: 0 0 0 0 rgba(196, 30, 58, 0.4); }
+            50% { box-shadow: 0 0 30px 10px rgba(196, 30, 58, 0.2); }
+        }
+
+        .hero h1 {
+            font-family: 'Archivo Black', sans-serif;
+            font-size: clamp(3.5rem, 12vw, 10rem);
+            line-height: 0.9;
+            margin-bottom: 1rem;
+        }
+
+        .hero h1 .kebab {
+            display: block;
+            background: linear-gradient(135deg, var(--accent-orange), var(--kebab-brown));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .hero h1 .tater {
+            display: block;
+            background: linear-gradient(135deg, var(--spice-yellow), var(--potato-gold));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .hero-tagline {
+            font-size: 1.1rem;
+            color: var(--text-secondary);
+            margin: 1.5rem 0;
+            letter-spacing: 3px;
+        }
+
+        /* Team Section */
+        .team {
+            padding: 5rem 2rem;
+            position: relative;
+            z-index: 10;
+        }
+
+        .section-title {
+            font-family: 'Archivo Black', sans-serif;
+            font-size: clamp(2rem, 6vw, 3.5rem);
+            text-align: center;
+            background: linear-gradient(135deg, var(--accent-orange), var(--spice-yellow));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            margin-bottom: 3rem;
+        }
+
+        .team-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 2rem;
+            max-width: 700px;
+            margin: 0 auto;
+        }
+
+        .team-card {
+            background: var(--bg-secondary);
+            border-radius: 20px;
+            overflow: hidden;
+            transition: all 0.4s;
+            border: 2px solid transparent;
+        }
+
+        .team-card:hover {
+            transform: translateY(-10px);
+            border-color: var(--christmas-red);
+            box-shadow: 0 30px 60px rgba(196, 30, 58, 0.3);
+        }
+
+        .team-card-bg {
+            height: 160px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 5rem;
+        }
+
+        .team-card-bg.potato {
+            background: linear-gradient(135deg, var(--potato-gold), var(--spice-yellow));
+        }
+
+        .team-card-bg.kebab {
+            background: linear-gradient(135deg, var(--kebab-brown), var(--christmas-red));
+        }
+
+        .team-card-content {
+            padding: 1.5rem;
+            text-align: center;
+        }
+
+        .team-name {
+            font-family: 'Archivo Black', sans-serif;
+            font-size: 1.4rem;
+            margin-bottom: 0.3rem;
+        }
+
+        .team-role {
+            color: var(--potato-gold);
+            font-size: 0.85rem;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+        }
+
+        /* Calculator Section */
+        .calculator-section {
+            padding: 5rem 2rem;
+            background: var(--bg-secondary);
+            position: relative;
+            z-index: 10;
+        }
+
+        .calculator {
+            max-width: 360px;
+            margin: 0 auto;
+            background: linear-gradient(145deg, #1a1a1a, #0a0a0a);
+            border-radius: 24px;
+            padding: 1.5rem;
+            box-shadow:
+                0 25px 50px rgba(0, 0, 0, 0.5),
+                inset 0 1px 0 rgba(255, 255, 255, 0.1);
+            border: 2px solid var(--kebab-brown);
+        }
+
+        .calc-display {
+            background: linear-gradient(135deg, #0d0d0d, #1a1a1a);
+            border-radius: 16px;
+            padding: 1.5rem;
+            margin-bottom: 1rem;
+            text-align: right;
+            border: 1px solid rgba(218, 165, 32, 0.3);
+        }
+
+        .calc-expression {
+            font-size: 1rem;
+            color: var(--text-secondary);
+            min-height: 1.5rem;
+            word-break: break-all;
+        }
+
+        .calc-result {
+            font-family: 'Archivo Black', sans-serif;
+            font-size: 2.5rem;
+            color: var(--potato-gold);
+            word-break: break-all;
+        }
+
+        .calc-buttons {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 0.75rem;
+        }
+
+        .calc-btn {
+            padding: 1.2rem;
+            font-family: 'Space Mono', monospace;
+            font-size: 1.2rem;
+            font-weight: 700;
+            border: none;
+            border-radius: 12px;
+            cursor: pointer;
+            transition: all 0.2s;
+            background: linear-gradient(145deg, #2a2a2a, #1a1a1a);
+            color: var(--snow-white);
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+        }
+
+        .calc-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 12px rgba(0, 0, 0, 0.4);
+        }
+
+        .calc-btn:active {
+            transform: translateY(0);
+        }
+
+        .calc-btn.operator {
+            background: linear-gradient(135deg, var(--christmas-red), var(--kebab-brown));
+            color: white;
+        }
+
+        .calc-btn.equals {
+            background: linear-gradient(135deg, var(--potato-gold), var(--accent-orange));
+            color: var(--dark-bg);
+            grid-column: span 2;
+        }
+
+        .calc-btn.clear {
+            background: linear-gradient(135deg, var(--christmas-green), #1a5a1a);
+            color: white;
+        }
+
+        .calc-btn.special {
+            background: linear-gradient(145deg, #3a3a3a, #2a2a2a);
+            color: var(--potato-gold);
+        }
+
+        /* Footer */
+        footer {
+            padding: 3rem 2rem;
+            text-align: center;
+            position: relative;
+            z-index: 10;
+        }
+
+        .footer-logo {
+            font-family: 'Archivo Black', sans-serif;
+            font-size: 1.5rem;
+            background: linear-gradient(135deg, var(--accent-orange), var(--spice-yellow));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            margin-bottom: 1rem;
+        }
+
+        .footer-text {
+            color: var(--text-secondary);
+            font-size: 0.85rem;
+        }
+
+        .footer-text span {
+            color: var(--christmas-red);
+        }
+
+        /* Mobile */
+        @media (max-width: 768px) {
+            .nav-links {
+                gap: 1rem;
+            }
+
+            .nav-links a {
+                font-size: 0.75rem;
+            }
+
+            .calculator {
+                max-width: 100%;
+            }
+
+            .calc-btn {
+                padding: 1rem;
+                font-size: 1.1rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="bg-pattern"></div>
+    <div class="snowflakes" id="snowflakes"></div>
+
+    <!-- Navigation -->
+    <nav>
+        <div class="logo">🥔 KebabTater 🍢</div>
+        <ul class="nav-links">
+            <li><a href="#home">Home</a></li>
+            <li><a href="#team">Team</a></li>
+            <li><a href="#calculator">Calculator</a></li>
+        </ul>
+    </nav>
+
+    <!-- Hero Section -->
+    <section class="hero" id="home">
+        <div class="hero-content">
+            <div class="hero-badge">
+                <i class="fas fa-snowflake"></i>
+                Christmas 2025
+            </div>
+            <h1>
+                <span class="kebab">KEBAB</span>
+                <span class="tater">TATER</span>
+            </h1>
+            <p class="hero-tagline">🎄 Crispy Meets Spicy 🎄</p>
+        </div>
+    </section>
+
+    <!-- Team Section -->
+    <section class="team" id="team">
+        <h2 class="section-title">The Duo</h2>
+        <div class="team-grid">
+            <div class="team-card">
+                <div class="team-card-bg potato">🥔</div>
+                <div class="team-card-content">
+                    <h3 class="team-name">James</h3>
+                    <p class="team-role">The Potato</p>
+                </div>
+            </div>
+            <div class="team-card">
+                <div class="team-card-bg kebab">🍢</div>
+                <div class="team-card-content">
+                    <h3 class="team-name">Ethem</h3>
+                    <p class="team-role">The Kebab</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Calculator Section -->
+    <section class="calculator-section" id="calculator">
+        <h2 class="section-title">🧮 Spicy Calculator</h2>
+        <div class="calculator">
+            <div class="calc-display">
+                <div class="calc-expression" id="expression"></div>
+                <div class="calc-result" id="result">0</div>
+            </div>
+            <div class="calc-buttons">
+                <button class="calc-btn clear" data-action="clear">C</button>
+                <button class="calc-btn special" data-action="backspace">⌫</button>
+                <button class="calc-btn special" data-action="percent">%</button>
+                <button class="calc-btn operator" data-action="operator" data-value="/">÷</button>
+
+                <button class="calc-btn" data-action="number" data-value="7">7</button>
+                <button class="calc-btn" data-action="number" data-value="8">8</button>
+                <button class="calc-btn" data-action="number" data-value="9">9</button>
+                <button class="calc-btn operator" data-action="operator" data-value="*">×</button>
+
+                <button class="calc-btn" data-action="number" data-value="4">4</button>
+                <button class="calc-btn" data-action="number" data-value="5">5</button>
+                <button class="calc-btn" data-action="number" data-value="6">6</button>
+                <button class="calc-btn operator" data-action="operator" data-value="-">−</button>
+
+                <button class="calc-btn" data-action="number" data-value="1">1</button>
+                <button class="calc-btn" data-action="number" data-value="2">2</button>
+                <button class="calc-btn" data-action="number" data-value="3">3</button>
+                <button class="calc-btn operator" data-action="operator" data-value="+">+</button>
+
+                <button class="calc-btn" data-action="number" data-value="0">0</button>
+                <button class="calc-btn" data-action="decimal">.</button>
+                <button class="calc-btn equals" data-action="calculate">=</button>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer>
+        <div class="footer-logo">🥔 KebabTater 🍢</div>
+        <p class="footer-text">© 2025 KebabTater. Made with <span>❤</span> by James & Ethem</p>
+    </footer>
+
+    <script>
+        // Dark mode detection
+        if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
+            document.documentElement.classList.add('dark');
+        }
+        window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', event => {
+            document.documentElement.classList.toggle('dark', event.matches);
+        });
+
+        // Snowflake generator
+        function createSnowflakes() {
+            const container = document.getElementById('snowflakes');
+            const chars = ['❄', '❅', '❆', '✧'];
+            for (let i = 0; i < 35; i++) {
+                const snowflake = document.createElement('span');
+                snowflake.className = 'snowflake';
+                snowflake.textContent = chars[Math.floor(Math.random() * chars.length)];
+                snowflake.style.left = Math.random() * 100 + '%';
+                snowflake.style.animationDuration = (Math.random() * 10 + 5) + 's';
+                snowflake.style.animationDelay = (Math.random() * 10) + 's';
+                snowflake.style.fontSize = (Math.random() * 1.2 + 0.5) + 'rem';
+                snowflake.style.opacity = Math.random() * 0.5 + 0.2;
+                container.appendChild(snowflake);
+            }
+        }
+        createSnowflakes();
+
+        // Calculator Logic
+        const expressionEl = document.getElementById('expression');
+        const resultEl = document.getElementById('result');
+        let currentInput = '0';
+        let expression = '';
+        let shouldResetInput = false;
+
+        function updateDisplay() {
+            expressionEl.textContent = expression;
+            resultEl.textContent = currentInput;
+        }
+
+        function handleNumber(value) {
+            if (shouldResetInput) {
+                currentInput = value;
+                shouldResetInput = false;
+            } else {
+                currentInput = currentInput === '0' ? value : currentInput + value;
+            }
+            updateDisplay();
+        }
+
+        function handleOperator(op) {
+            expression = currentInput + ' ' + op + ' ';
+            shouldResetInput = true;
+            updateDisplay();
+        }
+
+        function handleDecimal() {
+            if (shouldResetInput) {
+                currentInput = '0.';
+                shouldResetInput = false;
+            } else if (!currentInput.includes('.')) {
+                currentInput += '.';
+            }
+            updateDisplay();
+        }
+
+        function handleClear() {
+            currentInput = '0';
+            expression = '';
+            shouldResetInput = false;
+            updateDisplay();
+        }
+
+        function handleBackspace() {
+            if (currentInput.length > 1) {
+                currentInput = currentInput.slice(0, -1);
+            } else {
+                currentInput = '0';
+            }
+            updateDisplay();
+        }
+
+        function handlePercent() {
+            currentInput = String(parseFloat(currentInput) / 100);
+            updateDisplay();
+        }
+
+        function handleCalculate() {
+            if (!expression) return;
+
+            const fullExpression = expression + currentInput;
+            try {
+                const sanitized = fullExpression.replace(/[^0-9+\-*/.() ]/g, '');
+                const calcResult = Function('"use strict"; return (' + sanitized + ')')();
+
+                if (isNaN(calcResult) || !isFinite(calcResult)) {
+                    currentInput = 'Error';
+                } else {
+                    currentInput = String(Math.round(calcResult * 1000000000) / 1000000000);
+                }
+            } catch {
+                currentInput = 'Error';
+            }
+            expression = '';
+            shouldResetInput = true;
+            updateDisplay();
+        }
+
+        // Event listeners
+        document.querySelectorAll('.calc-btn').forEach(btn => {
+            btn.addEventListener('click', () => {
+                const action = btn.dataset.action;
+                const value = btn.dataset.value;
+
+                switch (action) {
+                    case 'number': handleNumber(value); break;
+                    case 'operator': handleOperator(value); break;
+                    case 'decimal': handleDecimal(); break;
+                    case 'clear': handleClear(); break;
+                    case 'backspace': handleBackspace(); break;
+                    case 'percent': handlePercent(); break;
+                    case 'calculate': handleCalculate(); break;
+                }
+            });
+        });
+
+        // Keyboard support
+        document.addEventListener('keydown', (e) => {
+            if (e.key >= '0' && e.key <= '9') handleNumber(e.key);
+            else if (e.key === '.') handleDecimal();
+            else if (e.key === '+' || e.key === '-' || e.key === '*' || e.key === '/') handleOperator(e.key);
+            else if (e.key === 'Enter' || e.key === '=') handleCalculate();
+            else if (e.key === 'Backspace') handleBackspace();
+            else if (e.key === 'Escape') handleClear();
+            else if (e.key === '%') handlePercent();
+        });
+
+        // Smooth scroll
+        document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+            anchor.addEventListener('click', function (e) {
+                e.preventDefault();
+                document.querySelector(this.getAttribute('href'))?.scrollIntoView({ behavior: 'smooth' });
+            });
+        });
+    </script>
+</body>
+</html>
+

@@ -1,0 +1,928 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Minerals — Essential for Life</title>
+    <link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=Sora:wght@300;400;500;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <style>
+        :root {
+            --bg-primary: #faf9f7;
+            --bg-secondary: #f0ece4;
+            --text-primary: #1a1a1a;
+            --text-secondary: #5a5a5a;
+            --accent: #2d5a4a;
+            --accent-light: #4a8b75;
+            --terracotta: #c9684a;
+            --gold: #d4a853;
+            --card-bg: #ffffff;
+            --border: rgba(0,0,0,0.08);
+        }
+
+        .dark {
+            --bg-primary: #0f0f0f;
+            --bg-secondary: #1a1a1a;
+            --text-primary: #f5f5f5;
+            --text-secondary: #a0a0a0;
+            --accent: #5cb896;
+            --accent-light: #7dd3b5;
+            --terracotta: #e88a6c;
+            --gold: #f0c060;
+            --card-bg: #1f1f1f;
+            --border: rgba(255,255,255,0.08);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        html {
+            scroll-behavior: smooth;
+        }
+
+        body {
+            font-family: 'Sora', sans-serif;
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            line-height: 1.7;
+            font-weight: 300;
+            overflow-x: hidden;
+        }
+
+        /* Navigation */
+        nav {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            padding: 1.5rem 4rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            z-index: 1000;
+            background: transparent;
+            transition: all 0.4s ease;
+        }
+
+        nav.scrolled {
+            background: var(--bg-primary);
+            box-shadow: 0 2px 40px rgba(0,0,0,0.06);
+            padding: 1rem 4rem;
+        }
+
+        .logo {
+            font-family: 'DM Serif Display', serif;
+            font-size: 1.5rem;
+            color: var(--accent);
+            text-decoration: none;
+            letter-spacing: -0.02em;
+        }
+
+        .nav-links {
+            display: flex;
+            gap: 2.5rem;
+            list-style: none;
+        }
+
+        .nav-links a {
+            text-decoration: none;
+            color: var(--text-secondary);
+            font-size: 0.85rem;
+            font-weight: 400;
+            letter-spacing: 0.02em;
+            transition: color 0.3s ease;
+        }
+
+        .nav-links a:hover {
+            color: var(--accent);
+        }
+
+        /* Hero Section */
+        .hero {
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            padding: 8rem 4rem 4rem;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .hero::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            right: -20%;
+            width: 80%;
+            height: 150%;
+            background: radial-gradient(ellipse, var(--accent) 0%, transparent 70%);
+            opacity: 0.05;
+            pointer-events: none;
+        }
+
+        .hero-content {
+            max-width: 800px;
+            animation: fadeUp 1s ease forwards;
+        }
+
+        @keyframes fadeUp {
+            from {
+                opacity: 0;
+                transform: translateY(40px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .hero-tag {
+            display: inline-block;
+            padding: 0.5rem 1.2rem;
+            background: var(--accent);
+            color: white;
+            font-size: 0.7rem;
+            font-weight: 500;
+            letter-spacing: 0.15em;
+            text-transform: uppercase;
+            border-radius: 2rem;
+            margin-bottom: 2rem;
+        }
+
+        .hero h1 {
+            font-family: 'DM Serif Display', serif;
+            font-size: clamp(3rem, 8vw, 6rem);
+            font-weight: 400;
+            line-height: 1.1;
+            letter-spacing: -0.03em;
+            margin-bottom: 1.5rem;
+        }
+
+        .hero h1 em {
+            font-style: italic;
+            color: var(--terracotta);
+        }
+
+        .hero p {
+            font-size: 1.1rem;
+            color: var(--text-secondary);
+            max-width: 500px;
+            margin-bottom: 2.5rem;
+        }
+
+        .cta-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.75rem;
+            padding: 1rem 2rem;
+            background: var(--text-primary);
+            color: var(--bg-primary);
+            text-decoration: none;
+            font-size: 0.85rem;
+            font-weight: 500;
+            letter-spacing: 0.02em;
+            border-radius: 3rem;
+            transition: all 0.3s ease;
+        }
+
+        .cta-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 40px rgba(0,0,0,0.15);
+        }
+
+        .cta-btn svg {
+            width: 16px;
+            height: 16px;
+            transition: transform 0.3s ease;
+        }
+
+        .cta-btn:hover svg {
+            transform: translateX(4px);
+        }
+
+        /* Sections */
+        section {
+            padding: 6rem 4rem;
+        }
+
+        .section-header {
+            text-align: center;
+            max-width: 600px;
+            margin: 0 auto 4rem;
+        }
+
+        .section-number {
+            font-family: 'DM Serif Display', serif;
+            font-size: 0.9rem;
+            color: var(--terracotta);
+            margin-bottom: 1rem;
+            display: block;
+        }
+
+        .section-header h2 {
+            font-family: 'DM Serif Display', serif;
+            font-size: clamp(2rem, 5vw, 3rem);
+            font-weight: 400;
+            letter-spacing: -0.02em;
+            margin-bottom: 1rem;
+        }
+
+        .section-header p {
+            color: var(--text-secondary);
+        }
+
+        /* What Are Minerals */
+        .what-section {
+            background: var(--bg-secondary);
+        }
+
+        .what-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 4rem;
+            max-width: 1200px;
+            margin: 0 auto;
+            align-items: center;
+        }
+
+        .what-visual {
+            position: relative;
+            height: 400px;
+            background: linear-gradient(135deg, var(--accent) 0%, var(--accent-light) 100%);
+            border-radius: 2rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+        }
+
+        .what-visual::before {
+            content: '';
+            position: absolute;
+            width: 200%;
+            height: 200%;
+            background: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23ffffff' fill-opacity='0.08'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+            animation: patternMove 20s linear infinite;
+        }
+
+        @keyframes patternMove {
+            0% { transform: translate(0, 0); }
+            100% { transform: translate(-50%, -50%); }
+        }
+
+        .what-visual-text {
+            position: relative;
+            z-index: 1;
+            color: white;
+            font-family: 'DM Serif Display', serif;
+            font-size: 2rem;
+            text-align: center;
+            padding: 2rem;
+        }
+
+        .what-content h3 {
+            font-family: 'DM Serif Display', serif;
+            font-size: 2rem;
+            font-weight: 400;
+            margin-bottom: 1.5rem;
+        }
+
+        .what-content p {
+            color: var(--text-secondary);
+            margin-bottom: 1.5rem;
+        }
+
+        /* Minerals List */
+        .minerals-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 1.5rem;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .mineral-card {
+            background: var(--card-bg);
+            border: 1px solid var(--border);
+            border-radius: 1.5rem;
+            padding: 2rem;
+            transition: all 0.4s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .mineral-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 4px;
+            height: 0;
+            background: var(--accent);
+            transition: height 0.4s ease;
+        }
+
+        .mineral-card:hover::before {
+            height: 100%;
+        }
+
+        .mineral-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 20px 60px rgba(0,0,0,0.08);
+        }
+
+        .mineral-icon {
+            width: 48px;
+            height: 48px;
+            background: var(--bg-secondary);
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 1.5rem;
+            font-size: 1.2rem;
+        }
+
+        .mineral-card h4 {
+            font-family: 'DM Serif Display', serif;
+            font-size: 1.4rem;
+            font-weight: 400;
+            margin-bottom: 0.5rem;
+        }
+
+        .mineral-card .symbol {
+            font-size: 0.75rem;
+            color: var(--terracotta);
+            font-weight: 500;
+            letter-spacing: 0.1em;
+            margin-bottom: 1rem;
+            display: block;
+        }
+
+        .mineral-card p {
+            color: var(--text-secondary);
+            font-size: 0.9rem;
+        }
+
+        /* Sources & Benefits Grid */
+        .dual-section {
+            background: var(--bg-secondary);
+        }
+
+        .dual-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 4rem;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .dual-card {
+            background: var(--card-bg);
+            border-radius: 2rem;
+            padding: 3rem;
+        }
+
+        .dual-card h3 {
+            font-family: 'DM Serif Display', serif;
+            font-size: 1.8rem;
+            font-weight: 400;
+            margin-bottom: 1.5rem;
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .dual-card h3 span {
+            width: 40px;
+            height: 40px;
+            background: var(--accent);
+            color: white;
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1rem;
+        }
+
+        .dual-card ul {
+            list-style: none;
+        }
+
+        .dual-card li {
+            padding: 1rem 0;
+            border-bottom: 1px solid var(--border);
+            color: var(--text-secondary);
+            display: flex;
+            align-items: flex-start;
+            gap: 1rem;
+        }
+
+        .dual-card li:last-child {
+            border-bottom: none;
+        }
+
+        .dual-card li::before {
+            content: '→';
+            color: var(--accent);
+            font-weight: 600;
+        }
+
+        /* Deficiency Section */
+        .deficiency-section {
+            position: relative;
+        }
+
+        .deficiency-content {
+            max-width: 800px;
+            margin: 0 auto;
+            text-align: center;
+        }
+
+        .deficiency-stats {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 2rem;
+            margin-top: 3rem;
+        }
+
+        .stat-item {
+            padding: 2rem;
+            background: var(--card-bg);
+            border: 1px solid var(--border);
+            border-radius: 1.5rem;
+        }
+
+        .stat-number {
+            font-family: 'DM Serif Display', serif;
+            font-size: 3rem;
+            color: var(--terracotta);
+            line-height: 1;
+            margin-bottom: 0.5rem;
+        }
+
+        .stat-label {
+            font-size: 0.85rem;
+            color: var(--text-secondary);
+        }
+
+        /* Recipe Section */
+        .recipe-section {
+            background: linear-gradient(135deg, var(--accent) 0%, #1a3d32 100%);
+            color: white;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .recipe-section::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: url("data:image/svg+xml,%3Csvg width='100' height='100' viewBox='0 0 100 100' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M11 18c3.866 0 7-3.134 7-7s-3.134-7-7-7-7 3.134-7 7 3.134 7 7 7zm48 25c3.866 0 7-3.134 7-7s-3.134-7-7-7-7 3.134-7 7 3.134 7 7 7zm-43-7c1.657 0 3-1.343 3-3s-1.343-3-3-3-3 1.343-3 3 1.343 3 3 3zm63 31c1.657 0 3-1.343 3-3s-1.343-3-3-3-3 1.343-3 3 1.343 3 3 3zM34 90c1.657 0 3-1.343 3-3s-1.343-3-3-3-3 1.343-3 3 1.343 3 3 3zm56-76c1.657 0 3-1.343 3-3s-1.343-3-3-3-3 1.343-3 3 1.343 3 3 3zM12 86c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm28-65c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm23-11c2.76 0 5-2.24 5-5s-2.24-5-5-5-5 2.24-5 5 2.24 5 5 5zm-6 60c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm29 22c2.76 0 5-2.24 5-5s-2.24-5-5-5-5 2.24-5 5 2.24 5 5 5zM32 63c2.76 0 5-2.24 5-5s-2.24-5-5-5-5 2.24-5 5 2.24 5 5 5zm57-13c2.76 0 5-2.24 5-5s-2.24-5-5-5-5 2.24-5 5 2.24 5 5 5zm-9-21c1.105 0 2-.895 2-2s-.895-2-2-2-2 .895-2 2 .895 2 2 2zM60 91c1.105 0 2-.895 2-2s-.895-2-2-2-2 .895-2 2 .895 2 2 2zM35 41c1.105 0 2-.895 2-2s-.895-2-2-2-2 .895-2 2 .895 2 2 2zM12 60c1.105 0 2-.895 2-2s-.895-2-2-2-2 .895-2 2 .895 2 2 2z' fill='%23ffffff' fill-opacity='0.03' fill-rule='evenodd'/%3E%3C/svg%3E");
+        }
+
+        .recipe-grid {
+            display: grid;
+            grid-template-columns: 1fr 1.2fr;
+            gap: 4rem;
+            max-width: 1100px;
+            margin: 0 auto;
+            position: relative;
+            z-index: 1;
+        }
+
+        .recipe-info h2 {
+            font-family: 'DM Serif Display', serif;
+            font-size: 2.5rem;
+            font-weight: 400;
+            margin-bottom: 0.5rem;
+        }
+
+        .recipe-info .recipe-subtitle {
+            color: rgba(255,255,255,0.7);
+            font-size: 0.9rem;
+            margin-bottom: 2rem;
+        }
+
+        .recipe-description {
+            color: rgba(255,255,255,0.85);
+            margin-bottom: 2rem;
+        }
+
+        .recipe-minerals {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.75rem;
+        }
+
+        .recipe-mineral-tag {
+            padding: 0.5rem 1rem;
+            background: rgba(255,255,255,0.15);
+            border-radius: 2rem;
+            font-size: 0.8rem;
+            backdrop-filter: blur(10px);
+        }
+
+        .recipe-card {
+            background: rgba(255,255,255,0.1);
+            backdrop-filter: blur(20px);
+            border-radius: 1.5rem;
+            padding: 2.5rem;
+            border: 1px solid rgba(255,255,255,0.1);
+        }
+
+        .recipe-card h4 {
+            font-family: 'DM Serif Display', serif;
+            font-size: 1.2rem;
+            margin-bottom: 1.5rem;
+            color: var(--gold);
+        }
+
+        .recipe-card ul {
+            list-style: none;
+        }
+
+        .recipe-card li {
+            padding: 0.5rem 0;
+            color: rgba(255,255,255,0.8);
+            font-size: 0.9rem;
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+        }
+
+        .recipe-card li::before {
+            content: '◆';
+            color: var(--gold);
+            font-size: 0.5rem;
+        }
+
+        /* Fun Fact Section */
+        .fact-section {
+            text-align: center;
+            padding: 8rem 4rem;
+        }
+
+        .fact-container {
+            max-width: 700px;
+            margin: 0 auto;
+            position: relative;
+        }
+
+        .fact-icon {
+            width: 80px;
+            height: 80px;
+            background: linear-gradient(135deg, var(--gold) 0%, var(--terracotta) 100%);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 2rem;
+            font-size: 2rem;
+        }
+
+        .fact-label {
+            font-size: 0.75rem;
+            font-weight: 500;
+            letter-spacing: 0.2em;
+            text-transform: uppercase;
+            color: var(--terracotta);
+            margin-bottom: 1.5rem;
+        }
+
+        .fact-text {
+            font-family: 'DM Serif Display', serif;
+            font-size: clamp(1.5rem, 4vw, 2.2rem);
+            line-height: 1.5;
+            font-weight: 400;
+        }
+
+        .fact-text em {
+            color: var(--accent);
+            font-style: italic;
+        }
+
+        /* Footer */
+        footer {
+            background: var(--text-primary);
+            color: var(--bg-primary);
+            padding: 4rem;
+            text-align: center;
+        }
+
+        .footer-logo {
+            font-family: 'DM Serif Display', serif;
+            font-size: 1.5rem;
+            margin-bottom: 1rem;
+        }
+
+        .footer-text {
+            font-size: 0.85rem;
+            opacity: 0.6;
+        }
+
+        /* Animations */
+        .fade-in {
+            opacity: 0;
+            transform: translateY(30px);
+            transition: all 0.8s ease;
+        }
+
+        .fade-in.visible {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        /* Responsive */
+        @media (max-width: 1024px) {
+            nav {
+                padding: 1rem 2rem;
+            }
+
+            section {
+                padding: 4rem 2rem;
+            }
+
+            .hero {
+                padding: 6rem 2rem 4rem;
+            }
+
+            .what-grid,
+            .dual-grid,
+            .recipe-grid {
+                grid-template-columns: 1fr;
+                gap: 2rem;
+            }
+
+            .deficiency-stats {
+                grid-template-columns: 1fr;
+            }
+
+            .nav-links {
+                display: none;
+            }
+        }
+
+        @media (max-width: 600px) {
+            .hero h1 {
+                font-size: 2.5rem;
+            }
+
+            .minerals-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <nav id="navbar">
+        <a href="#" class="logo">Minerals</a>
+        <ul class="nav-links">
+            <li><a href="#what">About</a></li>
+            <li><a href="#list">Minerals</a></li>
+            <li><a href="#sources">Sources</a></li>
+            <li><a href="#recipe">Recipe</a></li>
+        </ul>
+    </nav>
+
+    <!-- Hero -->
+    <section class="hero">
+        <div class="hero-content">
+            <span class="hero-tag">Essential Nutrition</span>
+            <h1>The Building Blocks of <em>Life</em></h1>
+            <p>Discover how essential minerals power every cell in your body, from strengthening bones to energizing your mind.</p>
+            <a href="#what" class="cta-btn">
+                Explore Minerals
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M5 12h14M12 5l7 7-7 7"/>
+                </svg>
+            </a>
+        </div>
+    </section>
+
+    <!-- What Are Minerals -->
+    <section class="what-section" id="what">
+        <div class="what-grid">
+            <div class="what-visual">
+                <div class="what-visual-text">
+                    Fe · Ca · Mg · Zn<br>K · Na · Cu · Se
+                </div>
+            </div>
+            <div class="what-content fade-in">
+                <h3>What Are Minerals?</h3>
+                <p>Minerals are inorganic elements that originate from the earth and cannot be made by living organisms. Plants absorb minerals from the soil, and animals get their minerals from the plants or other animals they consume.</p>
+                <p>Unlike vitamins, minerals maintain their chemical structure. They are categorized into two groups: macrominerals (needed in larger amounts) and trace minerals (needed in smaller quantities).</p>
+            </div>
+        </div>
+    </section>
+
+    <!-- Minerals List -->
+    <section id="list">
+        <div class="section-header fade-in">
+            <span class="section-number">02</span>
+            <h2>Essential Minerals</h2>
+            <p>Your body requires these vital minerals to function optimally, each playing unique roles in your health.</p>
+        </div>
+        <div class="minerals-grid">
+            <div class="mineral-card fade-in">
+                <div class="mineral-icon"><i class="fa-solid fa-bone"></i></div>
+                <h4>Calcium</h4>
+                <span class="symbol">Ca — MACROMINERAL</span>
+                <p>Essential for strong bones and teeth, muscle function, nerve transmission, and blood clotting. The most abundant mineral in the body.</p>
+            </div>
+            <div class="mineral-card fade-in">
+                <div class="mineral-icon"><i class="fa-solid fa-bolt"></i></div>
+                <h4>Iron</h4>
+                <span class="symbol">Fe — TRACE MINERAL</span>
+                <p>Critical for oxygen transport in blood, energy production, and immune function. Helps form hemoglobin and myoglobin proteins.</p>
+            </div>
+            <div class="mineral-card fade-in">
+                <div class="mineral-icon"><i class="fa-solid fa-dumbbell"></i></div>
+                <h4>Magnesium</h4>
+                <span class="symbol">Mg — MACROMINERAL</span>
+                <p>Involved in over 300 enzymatic reactions. Supports muscle and nerve function, blood sugar control, and protein synthesis.</p>
+            </div>
+            <div class="mineral-card fade-in">
+                <div class="mineral-icon"><i class="fa-solid fa-shield-halved"></i></div>
+                <h4>Zinc</h4>
+                <span class="symbol">Zn — TRACE MINERAL</span>
+                <p>Crucial for immune function, wound healing, DNA synthesis, and protein production. Supports growth and development.</p>
+            </div>
+            <div class="mineral-card fade-in">
+                <div class="mineral-icon"><i class="fa-solid fa-heart-pulse"></i></div>
+                <h4>Potassium</h4>
+                <span class="symbol">K — MACROMINERAL</span>
+                <p>Regulates fluid balance, muscle contractions, and nerve signals. Essential for maintaining healthy blood pressure.</p>
+            </div>
+            <div class="mineral-card fade-in">
+                <div class="mineral-icon"><i class="fa-solid fa-brain"></i></div>
+                <h4>Selenium</h4>
+                <span class="symbol">Se — TRACE MINERAL</span>
+                <p>Powerful antioxidant that protects cells from damage. Supports thyroid function and plays a role in DNA production.</p>
+            </div>
+        </div>
+    </section>
+
+    <!-- Sources & Why Section -->
+    <section class="dual-section" id="sources">
+        <div class="dual-grid">
+            <div class="dual-card fade-in">
+                <h3><span><i class="fa-solid fa-leaf"></i></span> Natural Sources</h3>
+                <ul>
+                    <li>Dark leafy greens like spinach and kale provide iron, calcium, and magnesium</li>
+                    <li>Nuts and seeds are rich in zinc, magnesium, and selenium</li>
+                    <li>Dairy products offer calcium and phosphorus</li>
+                    <li>Seafood delivers iodine, zinc, and selenium</li>
+                    <li>Legumes provide iron, magnesium, and potassium</li>
+                    <li>Whole grains contain manganese, phosphorus, and selenium</li>
+                </ul>
+            </div>
+            <div class="dual-card fade-in">
+                <h3><span><i class="fa-solid fa-star"></i></span> Why We Need Them</h3>
+                <ul>
+                    <li>Build and maintain strong bones and teeth structure</li>
+                    <li>Convert food into usable energy efficiently</li>
+                    <li>Support immune system function and wound healing</li>
+                    <li>Enable proper muscle contraction and relaxation</li>
+                    <li>Maintain healthy nerve transmission signals</li>
+                    <li>Regulate hormones and enzyme production</li>
+                </ul>
+            </div>
+        </div>
+    </section>
+
+    <!-- Deficiency Section -->
+    <section class="deficiency-section">
+        <div class="deficiency-content fade-in">
+            <span class="section-number">04</span>
+            <h2>When Minerals Run Low</h2>
+            <p style="color: var(--text-secondary); max-width: 500px; margin: 0 auto;">Mineral deficiencies can lead to a cascade of health issues, from subtle symptoms to serious conditions that affect your quality of life.</p>
+            <div class="deficiency-stats">
+                <div class="stat-item">
+                    <div class="stat-number">2B+</div>
+                    <div class="stat-label">People worldwide affected by iron deficiency anemia</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-number">50%</div>
+                    <div class="stat-label">Of adults don't get enough magnesium daily</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-number">10M</div>
+                    <div class="stat-label">Americans have osteoporosis from calcium deficiency</div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Recipe Section -->
+    <section class="recipe-section" id="recipe">
+        <div class="recipe-grid">
+            <div class="recipe-info fade-in">
+                <h2>Power-Packed Mineral Bowl</h2>
+                <p class="recipe-subtitle">A nutrient-dense dish bursting with essential minerals</p>
+                <p class="recipe-description">This vibrant Buddha bowl combines quinoa, roasted vegetables, leafy greens, and seeds to deliver a powerful dose of iron, magnesium, zinc, potassium, and more—all in one delicious meal.</p>
+                <div class="recipe-minerals">
+                    <span class="recipe-mineral-tag">Iron</span>
+                    <span class="recipe-mineral-tag">Magnesium</span>
+                    <span class="recipe-mineral-tag">Zinc</span>
+                    <span class="recipe-mineral-tag">Potassium</span>
+                    <span class="recipe-mineral-tag">Calcium</span>
+                    <span class="recipe-mineral-tag">Selenium</span>
+                </div>
+            </div>
+            <div class="recipe-card fade-in">
+                <h4>Key Ingredients</h4>
+                <ul>
+                    <li>Quinoa — complete protein with iron & magnesium</li>
+                    <li>Fresh spinach — iron, calcium, potassium</li>
+                    <li>Roasted sweet potato — potassium & manganese</li>
+                    <li>Chickpeas — zinc, iron, magnesium</li>
+                    <li>Pumpkin seeds — zinc, magnesium, iron</li>
+                    <li>Tahini dressing — calcium & selenium</li>
+                    <li>Avocado — potassium & magnesium</li>
+                    <li>Brazil nuts — selenium powerhouse</li>
+                </ul>
+            </div>
+        </div>
+    </section>
+
+    <!-- Fun Fact -->
+    <section class="fact-section">
+        <div class="fact-container fade-in">
+            <div class="fact-icon"><i class="fa-solid fa-gem"></i></div>
+            <div class="fact-label">Interesting Fact</div>
+            <p class="fact-text">Your body contains enough iron to make a <em>3-inch nail</em>, enough sulfur to kill all fleas on an average dog, and enough carbon to make <em>900 pencils</em>. Yet these minerals make up less than 4% of your total body weight.</p>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer>
+        <div class="footer-logo">Minerals</div>
+        <p class="footer-text">Nourish your body with nature's essential elements.</p>
+    </footer>
+
+    <script>
+        // Dark mode detection
+        if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
+            document.documentElement.classList.add('dark');
+        }
+        window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', event => {
+            if (event.matches) {
+                document.documentElement.classList.add('dark');
+            } else {
+                document.documentElement.classList.remove('dark');
+            }
+        });
+
+        // Navbar scroll effect
+        const navbar = document.getElementById('navbar');
+        window.addEventListener('scroll', () => {
+            if (window.scrollY > 50) {
+                navbar.classList.add('scrolled');
+            } else {
+                navbar.classList.remove('scrolled');
+            }
+        });
+
+        // Fade in on scroll
+        const fadeElements = document.querySelectorAll('.fade-in');
+
+        const observerOptions = {
+            threshold: 0.1,
+            rootMargin: '0px 0px -50px 0px'
+        };
+
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    entry.target.classList.add('visible');
+                }
+            });
+        }, observerOptions);
+
+        fadeElements.forEach(element => {
+            observer.observe(element);
+        });
+
+        // Smooth scroll for anchor links
+        document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+            anchor.addEventListener('click', function(e) {
+                e.preventDefault();
+                const target = document.querySelector(this.getAttribute('href'));
+                if (target) {
+                    target.scrollIntoView({
+                        behavior: 'smooth',
+                        block: 'start'
+                    });
+                }
+            });
+        });
+    </script>
+</body>
+</html>
+

@@ -90,7 +90,7 @@
                 const newCursorPosition = lines.slice(0, lineIndex + 1).join('\n').length;
                 textArea.setSelectionRange(newCursorPosition, newCursorPosition);
                 textArea.focus();
-                statusMessage.textContent = "Line translated successfully!";
+                statusMessage.textContent = "Done";
                 statusMessage.className = "absolute left-4 bottom-4 text-sm text-green-600 dark:text-green-400";
                 setTimeout(() => { statusMessage.textContent = ""; }, 3000);
             } else {

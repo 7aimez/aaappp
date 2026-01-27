@@ -2,95 +2,51 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <title>Super Precise Clock</title>
+  <title>Precise Clock</title>
   <style>
     body {
-      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      margin: 0;
+      background: #000;
+      color: #0ff;
       display: flex;
       justify-content: center;
       align-items: center;
       height: 100vh;
-      margin: 0;
-      background: #050816;
-      color: #e5e7eb;
+      font-family: monospace;
     }
-    .clock-container {
-      text-align: center;
-    }
-    .label {
-      font-size: 1rem;
-      color: #9ca3af;
-      margin-bottom: 0.5rem;
-    }
-    .time {
-      font-size: 2.5rem;
-      letter-spacing: 0.08em;
+    #clock {
+      font-size: 8rem;
+      letter-spacing: 0.1em;
       font-variant-numeric: tabular-nums;
-    }
-    .sub {
-      margin-top: 0.75rem;
-      font-size: 0.9rem;
-      color: #6b7280;
     }
   </style>
 </head>
 <body>
-  <div class="clock-container">
-    <div class="label">High‑Precision Clock (Local Time)</div>
-    <div class="time" id="clock">--:--:--.------</div>
-    <div class="sub">
-      Uses <code>performance.now()</code> for sub‑millisecond precision (displayed to microseconds).
-    </div>
-  </div>
+  <div id="clock">--:--:--.---</div>
 
   <script>
-    // Format number with leading zeros
     function pad(num, size) {
       let s = String(num);
       while (s.length < size) s = "0" + s;
       return s;
     }
 
-    // Returns a string HH:MM:SS.mmmuuu (microseconds)
-    function getHighPrecisionTime() {
+    function getTime() {
       const now = new Date();
-      const baseMs = now.getTime(); // milliseconds since epoch (integer)
-      const perf = performance.now(); // high‑resolution time since page load (fractional ms)
-
-      // Combine coarse and fine timing:
-      // We sync to the current second using Date, then use performance.now()
-      // to get a high‑precision fraction within that second.
-      const secondsSinceEpoch = Math.floor(baseMs / 1000);
-      const msWithinSecondCoarse = baseMs % 1000;
-
-      // Fractional part from performance.now()
-      const fractionalMs = perf % 1; // 0–1 ms
-      const preciseMsWithinSecond = msWithinSecondCoarse + fractionalMs;
-
-      const hours = now.getHours();
-      const minutes = now.getMinutes();
-      const seconds = now.getSeconds();
-
-      const ms = Math.floor(preciseMsWithinSecond);
-      const micro = Math.floor((preciseMsWithinSecond - ms) * 1000); // microseconds within ms
-
-      const hh = pad(hours, 2);
-      const mm = pad(minutes, 2);
-      const ss = pad(seconds, 2);
-      const mmm = pad(ms, 3);
-      const uuu = pad(micro, 3);
-
-      return `${hh}:${mm}:${ss}.${mmm}${uuu}`;
+      const hh = pad(now.getHours(), 2);
+      const mm = pad(now.getMinutes(), 2);
+      const ss = pad(now.getSeconds(), 2);
+      const ms = pad(now.getMilliseconds(), 3);
+      return `${hh}:${mm}:${ss}.${ms}`;
     }
 
     const clockEl = document.getElementById("clock");
 
     function updateClock() {
-      clockEl.textContent = getHighPrecisionTime();
+      clockEl.textContent = getTime();
       requestAnimationFrame(updateClock);
     }
 
-    // Start the animation loop
     requestAnimationFrame(updateClock);
   </script>
 </body>

@@ -1,0 +1,567 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Clock with Aurora</title>
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@300;400;500&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg-primary: #0a0a0b;
+      --bg-secondary: #111113;
+      --text-primary: #fafafa;
+      --text-secondary: rgba(250, 250, 250, 0.4);
+      --text-tertiary: rgba(250, 250, 250, 0.15);
+      --accent: #ff6b35;
+      --accent-glow: rgba(255, 107, 53, 0.3);
+      --glass: rgba(255, 255, 255, 0.03);
+      --glass-border: rgba(255, 255, 255, 0.06);
+    }
+
+    .light {
+      --bg-primary: #fefefe;
+      --bg-secondary: #f5f5f7;
+      --text-primary: #0a0a0b;
+      --text-secondary: rgba(10, 10, 11, 0.45);
+      --text-tertiary: rgba(10, 10, 11, 0.12);
+      --glass: rgba(0, 0, 0, 0.02);
+      --glass-border: rgba(0, 0, 0, 0.05);
+    }
+
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    html, body {
+      height: 100%;
+      overflow: hidden;
+    }
+
+    body {
+      font-family: 'Space Mono', monospace;
+      background: var(--bg-primary);
+      color: var(--text-primary);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      position: relative;
+      transition: background 0.8s ease;
+    }
+
+    /* Aurora Background */
+    .aurora {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      pointer-events: none;
+      overflow: hidden;
+      opacity: 0.6;
+    }
+
+    .aurora-blob {
+      position: absolute;
+      border-radius: 50%;
+      filter: blur(100px);
+      animation: float 20s ease-in-out infinite;
+      mix-blend-mode: screen;
+    }
+
+    .light .aurora-blob {
+      mix-blend-mode: multiply;
+      opacity: 0.3;
+    }
+
+    .aurora-blob:nth-child(1) {
+      width: 600px;
+      height: 600px;
+      background: radial-gradient(circle, var(--accent) 0%, transparent 70%);
+      top: -20%;
+      left: -10%;
+      animation-delay: 0s;
+    }
+
+    .aurora-blob:nth-child(2) {
+      width: 500px;
+      height: 500px;
+      background: radial-gradient(circle, #6366f1 0%, transparent 70%);
+      top: 50%;
+      right: -15%;
+      animation-delay: -7s;
+    }
+
+    .aurora-blob:nth-child(3) {
+      width: 400px;
+      height: 400px;
+      background: radial-gradient(circle, #06b6d4 0%, transparent 70%);
+      bottom: -10%;
+      left: 30%;
+      animation-delay: -14s;
+    }
+
+    @keyframes float {
+      0%, 100% { transform: translate(0, 0) scale(1); }
+      25% { transform: translate(50px, -30px) scale(1.1); }
+      50% { transform: translate(-20px, 50px) scale(0.95); }
+      75% { transform: translate(-40px, -20px) scale(1.05); }
+    }
+
+    /* Grid Lines */
+    .grid-overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      pointer-events: none;
+      background-image:
+        linear-gradient(var(--text-tertiary) 1px, transparent 1px),
+        linear-gradient(90deg, var(--text-tertiary) 1px, transparent 1px);
+      background-size: 80px 80px;
+      opacity: 0.3;
+    }
+
+    /* Main Container */
+    .container {
+      position: relative;
+      z-index: 10;
+      text-align: center;
+      padding: 2rem;
+      width: 100%;
+      max-width: 900px;
+    }
+
+    /* Clock Display */
+    .clock-container {
+      position: relative;
+      width: 500px;
+      height: 500px;
+      margin: 0 auto 2rem;
+    }
+
+    /* Seconds Ring */
+    .seconds-ring {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+    }
+
+    .seconds-ring svg {
+      width: 100%;
+      height: 100%;
+      transform: rotate(-90deg);
+    }
+
+    .seconds-ring circle {
+      fill: none;
+      stroke: var(--accent);
+      stroke-width: 4;
+      stroke-linecap: round;
+      stroke-dasharray: 1000;
+      stroke-dashoffset: 1000;
+      opacity: 0.6;
+      transition: stroke-dashoffset 1s linear;
+    }
+
+    /* Time Display */
+    .time-display {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      text-align: center;
+      z-index: 20;
+    }
+
+    .time {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 5.5rem;
+      font-weight: 300;
+      letter-spacing: -0.02em;
+      line-height: 1;
+      margin-bottom: 1rem;
+      background: linear-gradient(135deg, var(--text-primary) 0%, var(--text-secondary) 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+
+    .date {
+      font-size: 1rem;
+      letter-spacing: 0.3em;
+      text-transform: uppercase;
+      color: var(--text-secondary);
+    }
+
+    /* Second Markers */
+    .second-markers {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      border-radius: 50%;
+    }
+
+    .marker {
+      position: absolute;
+      width: 2px;
+      height: 16px;
+      background: var(--text-tertiary);
+      left: 50%;
+      top: 20px;
+      transform-origin: 0 230px;
+    }
+
+    .marker.major {
+      height: 24px;
+      background: var(--text-secondary);
+      width: 3px;
+    }
+
+    /* Breathing Circle */
+    .breathing-circle {
+      position: fixed;
+      bottom: 2rem;
+      right: 2rem;
+      width: 50px;
+      height: 50px;
+      border-radius: 50%;
+      border: 1px solid var(--text-tertiary);
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: all 0.3s ease;
+      z-index: 100;
+    }
+
+    .breathing-circle:hover {
+      border-color: var(--accent);
+      transform: scale(1.1);
+    }
+
+    .breathing-circle.active {
+      animation: breathe 8s ease-in-out infinite;
+      border-color: var(--accent);
+    }
+
+    .breathing-circle .inner {
+      width: 8px;
+      height: 8px;
+      background: var(--accent);
+      border-radius: 50%;
+      transition: all 0.3s ease;
+    }
+
+    .breathing-circle.active .inner {
+      animation: breatheInner 8s ease-in-out infinite;
+    }
+
+    @keyframes breathe {
+      0%, 100% { transform: scale(1); }
+      50% { transform: scale(1.5); }
+    }
+
+    @keyframes breatheInner {
+      0%, 100% { opacity: 0.3; transform: scale(1); }
+      50% { opacity: 1; transform: scale(2); }
+    }
+
+    /* Stats Corner */
+    .stats {
+      position: fixed;
+      bottom: 2rem;
+      left: 2rem;
+      display: flex;
+      flex-direction: column;
+      gap: 0.5rem;
+      z-index: 100;
+    }
+
+    .stat {
+      font-size: 0.7rem;
+      letter-spacing: 0.15em;
+      color: var(--text-tertiary);
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    .stat-dot {
+      width: 4px;
+      height: 4px;
+      background: var(--accent);
+      border-radius: 50%;
+      animation: pulse 2s ease-in-out infinite;
+    }
+
+    @keyframes pulse {
+      0%, 100% { opacity: 0.3; }
+      50% { opacity: 1; }
+    }
+
+    /* Theme Toggle */
+    .theme-toggle {
+      position: fixed;
+      top: 2rem;
+      right: 2rem;
+      font-size: 0.6rem;
+      letter-spacing: 0.2em;
+      color: var(--text-tertiary);
+      text-transform: uppercase;
+      background: var(--glass);
+      border: 1px solid var(--glass-border);
+      padding: 0.75rem 1.5rem;
+      border-radius: 30px;
+      cursor: pointer;
+      z-index: 100;
+      transition: all 0.3s ease;
+    }
+
+    .theme-toggle:hover {
+      border-color: var(--accent);
+      color: var(--text-primary);
+    }
+
+    /* Weather Badge */
+    .weather {
+      position: fixed;
+      top: 2rem;
+      left: 2rem;
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      padding: 0.75rem 1rem;
+      background: var(--glass);
+      border: 1px solid var(--glass-border);
+      border-radius: 30px;
+      backdrop-filter: blur(10px);
+      z-index: 100;
+    }
+
+    .weather-icon {
+      font-size: 1.2rem;
+    }
+
+    .weather-temp {
+      font-size: 0.8rem;
+      color: var(--text-secondary);
+    }
+
+    /* Responsive */
+    @media (max-width: 768px) {
+      .clock-container {
+        width: 300px;
+        height: 300px;
+      }
+
+      .time {
+        font-size: 3.2rem;
+      }
+
+      .date {
+        font-size: 0.8rem;
+      }
+
+      .marker {
+        transform-origin: 0 135px;
+        height: 10px;
+      }
+
+      .marker.major {
+        height: 15px;
+      }
+
+      .weather, .stats, .breathing-circle {
+        display: none;
+      }
+    }
+  </style>
+</head>
+<body>
+  <!-- Aurora Background -->
+  <div class="aurora">
+    <div class="aurora-blob"></div>
+    <div class="aurora-blob"></div>
+    <div class="aurora-blob"></div>
+  </div>
+
+  <!-- Grid Overlay -->
+  <div class="grid-overlay"></div>
+
+  <!-- Main Content -->
+  <div class="container">
+    <div class="clock-container">
+      <div class="seconds-ring">
+        <svg viewBox="0 0 500 500" preserveAspectRatio="xMidYMid meet">
+          <circle id="secondsCircle" cx="250" cy="250" r="245"></circle>
+        </svg>
+      </div>
+      
+      <div class="second-markers" id="secondMarkers"></div>
+      
+      <div class="time-display">
+        <div class="time" id="time">00:00</div>
+        <div class="date" id="date">Loading...</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Weather Badge -->
+  <div class="weather">
+    <div class="weather-icon" id="weatherIcon">☀️</div>
+    <div class="weather-temp" id="weatherTemp">24°C</div>
+  </div>
+
+  <!-- Stats Corner -->
+  <div class="stats">
+    <div class="stat" id="dayProgress">
+      <span class="stat-dot"></span>
+      <span>Day Progress</span>
+    </div>
+    <div class="stat" id="yearProgress">
+      <span class="stat-dot"></span>
+      <span>Year Progress</span>
+    </div>
+  </div>
+
+  <!-- Breathing Circle -->
+  <div class="breathing-circle" id="breathingCircle" title="Click to breathe">
+    <div class="inner"></div>
+  </div>
+
+  <!-- Theme Toggle -->
+  <div class="theme-toggle" id="themeToggle">
+    Light Mode
+  </div>
+
+  <script>
+    // Theme Detection and Toggle
+    const themeToggle = document.getElementById('themeToggle');
+    
+    if (window.matchMedia && window.matchMedia('(prefers-color-scheme: light)').matches) {
+      document.documentElement.classList.add('light');
+      themeToggle.textContent = 'Dark Mode';
+    }
+    
+    themeToggle.addEventListener('click', () => {
+      document.documentElement.classList.toggle('light');
+      themeToggle.textContent = document.documentElement.classList.contains('light') 
+        ? 'Dark Mode' 
+        : 'Light Mode';
+    });
+
+    // Elements
+    const timeEl = document.getElementById('time');
+    const dateEl = document.getElementById('date');
+    const secondsCircle = document.getElementById('secondsCircle');
+    const secondMarkers = document.getElementById('secondMarkers');
+    const breathingCircle = document.getElementById('breathingCircle');
+    const dayProgressEl = document.getElementById('dayProgress');
+    const yearProgressEl = document.getElementById('yearProgress');
+    const weatherTempEl = document.getElementById('weatherTemp');
+    const weatherIconEl = document.getElementById('weatherIcon');
+
+    // Create second markers
+    function createMarkers() {
+      for (let i = 0; i < 60; i++) {
+        const marker = document.createElement('div');
+        marker.className = 'marker';
+        if (i % 5 === 0) marker.classList.add('major');
+        marker.style.transform = `rotate(${i * 6}deg)`;
+        secondMarkers.appendChild(marker);
+      }
+    }
+
+    // Update time and date
+    function updateTime() {
+      const now = new Date();
+      const hours = now.getHours().toString().padStart(2, '0');
+      const minutes = now.getMinutes().toString().padStart(2, '0');
+      const seconds = now.getSeconds();
+
+      timeEl.textContent = `${hours}:${minutes}`;
+
+      // Update seconds circle
+      const circumference = 2 * Math.PI * 245;
+      const progress = (seconds / 60) * circumference;
+      secondsCircle.style.strokeDashoffset = circumference - progress;
+      secondsCircle.style.strokeDasharray = circumference;
+
+      // Update date
+      const options = { weekday: 'long', month: 'long', day: 'numeric', year: 'numeric' };
+      dateEl.textContent = now.toLocaleDateString('en-US', options).toUpperCase();
+
+      // Update day progress
+      const startOfDay = new Date(now);
+      startOfDay.setHours(0, 0, 0, 0);
+      const dayProgress = ((now - startOfDay) / (24 * 60 * 60 * 1000) * 100).toFixed(1);
+      dayProgressEl.innerHTML = `<span class="stat-dot"></span><span>Day: ${dayProgress}%</span>`;
+
+      // Update year progress
+      const startOfYear = new Date(now.getFullYear(), 0, 1);
+      const endOfYear = new Date(now.getFullYear() + 1, 0, 1);
+      const yearProgress = ((now - startOfYear) / (endOfYear - startOfYear) * 100).toFixed(2);
+      yearProgressEl.innerHTML = `<span class="stat-dot"></span><span>Year: ${yearProgress}%</span>`;
+    }
+
+    // Simulate weather data
+    function updateWeather() {
+      const temp = Math.floor(Math.random() * 15) + 18;
+      weatherTempEl.textContent = `${temp}°C`;
+      
+      // Change weather icon based on time of day
+      const hour = new Date().getHours();
+      if (hour >= 6 && hour < 18) {
+        weatherIconEl.textContent = '☀️';
+      } else {
+        weatherIconEl.textContent = '🌙';
+      }
+    }
+
+    // Breathing circle interaction
+    breathingCircle.addEventListener('click', () => {
+      breathingCircle.classList.toggle('active');
+    });
+
+    // Initialize
+    createMarkers();
+    updateTime();
+    updateWeather();
+    
+    // Update intervals
+    setInterval(updateTime, 1000);
+    setInterval(updateWeather, 60000);
+    
+    // Update weather based on time of day
+    setInterval(() => {
+      const hour = new Date().getHours();
+      if (hour >= 6 && hour < 18) {
+        weatherIconEl.textContent = '☀️';
+      } else {
+        weatherIconEl.textContent = '🌙';
+      }
+    }, 60000);
+
+    // Keyboard shortcuts
+    document.addEventListener('keydown', (e) => {
+      // B for breathing circle
+      if (e.key.toLowerCase() === 'b') {
+        breathingCircle.click();
+      }
+      
+      // T for theme toggle
+      if (e.key.toLowerCase() === 't') {
+        themeToggle.click();
+      }
+    });
+  </script>
+</body>
+</html>

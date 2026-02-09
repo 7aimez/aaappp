@@ -1,1 +1,1009 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Tectonic Hazards</title>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:ital,wght@0,300;0,400;0,500;0,700;1,400&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+<style>
+  :root {
+    --bg: #0a0a0f;
+    --bg2: #111119;
+    --bg3: #1a1a25;
+    --text: #e8e6e3;
+    --text-dim: #8a8897;
+    --accent: #00e5ff;
+    --accent2: #0091ff;
+    --danger: #ff3d5a;
+    --warn: #ffb347;
+    --card-bg: rgba(255,255,255,0.03);
+    --card-border: rgba(255,255,255,0.06);
+    --gradient-accent: linear-gradient(135deg, #00e5ff, #0091ff);
+  }
+
+  html.dark {
+    --bg: #0a0a0f;
+    --bg2: #111119;
+    --bg3: #1a1a25;
+    --text: #e8e6e3;
+    --text-dim: #8a8897;
+    --card-bg: rgba(255,255,255,0.03);
+    --card-border: rgba(255,255,255,0.06);
+  }
+
+  html:not(.dark) {
+    --bg: #f4f2ef;
+    --bg2: #eae7e2;
+    --bg3: #dfdcd7;
+    --text: #1a1a25;
+    --text-dim: #6b6878;
+    --card-bg: rgba(0,0,0,0.03);
+    --card-border: rgba(0,0,0,0.08);
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  html {
+    scroll-behavior: smooth;
+    font-size: 16px;
+  }
+
+  body {
+    font-family: 'DM Sans', sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    overflow-x: hidden;
+    line-height: 1.7;
+  }
+
+  /* ── SCROLLBAR ── */
+  ::-webkit-scrollbar { width: 6px; }
+  ::-webkit-scrollbar-track { background: var(--bg); }
+  ::-webkit-scrollbar-thumb { background: var(--accent); border-radius: 3px; }
+
+  /* ── NAVIGATION ── */
+  nav {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    z-index: 100;
+    padding: 1.2rem 2rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    backdrop-filter: blur(20px);
+    background: rgba(10,10,15,0.6);
+    border-bottom: 1px solid var(--card-border);
+    transition: background 0.3s;
+  }
+  html:not(.dark) nav {
+    background: rgba(244,242,239,0.7);
+  }
+
+  .nav-logo {
+    font-family: 'Bebas Neue', cursive;
+    font-size: 1.4rem;
+    letter-spacing: 4px;
+    color: var(--accent);
+    text-transform: uppercase;
+  }
+
+  .nav-links {
+    display: flex;
+    gap: 2rem;
+    list-style: none;
+  }
+
+  .nav-links a {
+    text-decoration: none;
+    color: var(--text-dim);
+    font-size: 0.82rem;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    font-weight: 500;
+    transition: color 0.3s;
+    position: relative;
+  }
+
+  .nav-links a::after {
+    content: '';
+    position: absolute;
+    bottom: -4px;
+    left: 0;
+    width: 0;
+    height: 2px;
+    background: var(--accent);
+    transition: width 0.3s;
+  }
+
+  .nav-links a:hover { color: var(--accent); }
+  .nav-links a:hover::after { width: 100%; }
+
+  .nav-burger {
+    display: none;
+    background: none;
+    border: none;
+    color: var(--text);
+    font-size: 1.4rem;
+    cursor: pointer;
+  }
+
+  /* ── HERO ── */
+  .hero {
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    text-align: center;
+    padding: 6rem 2rem 4rem;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .hero::before {
+    content: '';
+    position: absolute;
+    top: -50%;
+    left: -50%;
+    width: 200%;
+    height: 200%;
+    background:
+      radial-gradient(ellipse 600px 600px at 30% 40%, rgba(0,229,255,0.07), transparent),
+      radial-gradient(ellipse 400px 400px at 70% 60%, rgba(0,145,255,0.05), transparent),
+      radial-gradient(ellipse 300px 300px at 50% 80%, rgba(255,61,90,0.04), transparent);
+    animation: bgPulse 12s ease-in-out infinite alternate;
+  }
+
+  @keyframes bgPulse {
+    0% { transform: translate(0, 0) scale(1); }
+    100% { transform: translate(-3%, -2%) scale(1.05); }
+  }
+
+  .hero-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.5rem 1.2rem;
+    border: 1px solid var(--accent);
+    border-radius: 100px;
+    font-size: 0.72rem;
+    letter-spacing: 3px;
+    text-transform: uppercase;
+    color: var(--accent);
+    margin-bottom: 2.5rem;
+    position: relative;
+    z-index: 1;
+    opacity: 0;
+    animation: fadeUp 0.8s 0.2s forwards;
+  }
+
+  .hero-badge .dot {
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: var(--danger);
+    animation: blink 2s infinite;
+  }
+
+  @keyframes blink {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.2; }
+  }
+
+  .hero h1 {
+    font-family: 'Bebas Neue', cursive;
+    font-size: clamp(3.5rem, 12vw, 10rem);
+    line-height: 0.9;
+    letter-spacing: -2px;
+    position: relative;
+    z-index: 1;
+    opacity: 0;
+    animation: fadeUp 1s 0.4s forwards;
+  }
+
+  .hero h1 .line-accent {
+    background: var(--gradient-accent);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+
+  .hero-sub {
+    max-width: 580px;
+    margin-top: 2rem;
+    font-size: 1.05rem;
+    color: var(--text-dim);
+    font-weight: 300;
+    position: relative;
+    z-index: 1;
+    opacity: 0;
+    animation: fadeUp 1s 0.7s forwards;
+  }
+
+  .hero-scroll {
+    margin-top: 4rem;
+    position: relative;
+    z-index: 1;
+    opacity: 0;
+    animation: fadeUp 1s 1s forwards;
+  }
+
+  .hero-scroll a {
+    display: inline-flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.5rem;
+    text-decoration: none;
+    color: var(--text-dim);
+    font-size: 0.7rem;
+    letter-spacing: 3px;
+    text-transform: uppercase;
+    transition: color 0.3s;
+  }
+
+  .hero-scroll a:hover { color: var(--accent); }
+
+  .hero-scroll .arrow {
+    width: 1px;
+    height: 40px;
+    background: var(--text-dim);
+    position: relative;
+    overflow: hidden;
+  }
+
+  .hero-scroll .arrow::after {
+    content: '';
+    position: absolute;
+    top: -100%;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: var(--accent);
+    animation: scrollLine 2s infinite;
+  }
+
+  @keyframes scrollLine {
+    0% { top: -100%; }
+    100% { top: 100%; }
+  }
+
+  @keyframes fadeUp {
+    from { opacity: 0; transform: translateY(30px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  /* ── SECTIONS ── */
+  section {
+    padding: 6rem 2rem;
+    max-width: 1100px;
+    margin: 0 auto;
+  }
+
+  .section-label {
+    font-family: 'Bebas Neue', cursive;
+    font-size: 0.85rem;
+    letter-spacing: 5px;
+    text-transform: uppercase;
+    color: var(--accent);
+    margin-bottom: 1rem;
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+  }
+
+  .section-label::before {
+    content: '';
+    width: 40px;
+    height: 1px;
+    background: var(--accent);
+  }
+
+  .section-title {
+    font-family: 'Bebas Neue', cursive;
+    font-size: clamp(2.5rem, 6vw, 4.5rem);
+    line-height: 1;
+    margin-bottom: 2rem;
+    letter-spacing: -1px;
+  }
+
+  /* ── ARGUMENT SECTION ── */
+  .argument-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 2rem;
+    margin-top: 3rem;
+  }
+
+  .argument-card {
+    background: var(--card-bg);
+    border: 1px solid var(--card-border);
+    border-radius: 16px;
+    padding: 2.5rem;
+    position: relative;
+    overflow: hidden;
+    transition: transform 0.4s, border-color 0.4s;
+  }
+
+  .argument-card:hover {
+    transform: translateY(-4px);
+    border-color: rgba(0,229,255,0.2);
+  }
+
+  .argument-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 3px;
+    background: var(--gradient-accent);
+    opacity: 0;
+    transition: opacity 0.4s;
+  }
+
+  .argument-card:hover::before { opacity: 1; }
+
+  .argument-card .icon {
+    width: 48px;
+    height: 48px;
+    border-radius: 12px;
+    background: rgba(0,229,255,0.08);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.2rem;
+    color: var(--accent);
+    margin-bottom: 1.5rem;
+  }
+
+  .argument-card h3 {
+    font-family: 'Bebas Neue', cursive;
+    font-size: 1.5rem;
+    letter-spacing: 1px;
+    margin-bottom: 0.75rem;
+  }
+
+  .argument-card p {
+    color: var(--text-dim);
+    font-size: 0.95rem;
+    line-height: 1.8;
+  }
+
+  .full-width-card {
+    grid-column: 1 / -1;
+  }
+
+  /* ── COMPARISON STRIP ── */
+  .comparison-strip {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 0;
+    margin: 4rem 0;
+    border-radius: 20px;
+    overflow: hidden;
+    border: 1px solid var(--card-border);
+  }
+
+  .comp-item {
+    padding: 3rem 2rem;
+    text-align: center;
+    position: relative;
+    background: var(--card-bg);
+    transition: background 0.4s;
+  }
+
+  .comp-item:not(:last-child)::after {
+    content: '';
+    position: absolute;
+    right: 0;
+    top: 20%;
+    height: 60%;
+    width: 1px;
+    background: var(--card-border);
+  }
+
+  .comp-item.active {
+    background: rgba(0,229,255,0.06);
+  }
+
+  .comp-item .comp-icon {
+    font-size: 2rem;
+    margin-bottom: 1rem;
+  }
+
+  .comp-item h4 {
+    font-family: 'Bebas Neue', cursive;
+    font-size: 1.3rem;
+    letter-spacing: 2px;
+    margin-bottom: 0.5rem;
+  }
+
+  .comp-item .comp-verdict {
+    font-size: 0.75rem;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    font-weight: 700;
+    padding: 0.3rem 0.8rem;
+    border-radius: 100px;
+    display: inline-block;
+    margin-top: 0.75rem;
+  }
+
+  .verdict-low { background: rgba(0,229,255,0.1); color: var(--accent); }
+  .verdict-high { background: rgba(255,61,90,0.12); color: var(--danger); }
+  .verdict-med { background: rgba(255,179,71,0.12); color: var(--warn); }
+
+  /* ── STATS BANNER ── */
+  .stats-banner {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 1.5rem;
+    margin: 4rem 0;
+  }
+
+  .stat-box {
+    text-align: center;
+    padding: 2rem 1rem;
+    background: var(--card-bg);
+    border: 1px solid var(--card-border);
+    border-radius: 16px;
+    transition: border-color 0.4s;
+  }
+
+  .stat-box:hover { border-color: rgba(0,229,255,0.2); }
+
+  .stat-number {
+    font-family: 'Bebas Neue', cursive;
+    font-size: 2.8rem;
+    background: var(--gradient-accent);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    line-height: 1;
+  }
+
+  .stat-icon {
+    font-size: 1.3rem;
+    color: var(--accent);
+    margin-bottom: 0.75rem;
+    opacity: 0.7;
+  }
+
+  .stat-label {
+    margin-top: 0.5rem;
+    font-size: 0.78rem;
+    color: var(--text-dim);
+    letter-spacing: 1px;
+    text-transform: uppercase;
+  }
+
+  /* ── CASE STUDY TIMELINE ── */
+  .timeline {
+    position: relative;
+    margin-top: 3rem;
+    padding-left: 3rem;
+  }
+
+  .timeline::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    top: 0;
+    bottom: 0;
+    width: 2px;
+    background: linear-gradient(to bottom, var(--accent), var(--accent2), var(--danger));
+  }
+
+  .timeline-item {
+    position: relative;
+    margin-bottom: 2.5rem;
+    padding: 2rem;
+    background: var(--card-bg);
+    border: 1px solid var(--card-border);
+    border-radius: 14px;
+    transition: transform 0.3s, border-color 0.3s;
+  }
+
+  .timeline-item:hover {
+    transform: translateX(6px);
+    border-color: rgba(0,229,255,0.15);
+  }
+
+  .timeline-item::before {
+    content: '';
+    position: absolute;
+    left: -3rem;
+    top: 2.4rem;
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    background: var(--accent);
+    border: 2px solid var(--bg);
+    transform: translateX(-4px);
+  }
+
+  .timeline-item .tl-category {
+    font-size: 0.7rem;
+    letter-spacing: 3px;
+    text-transform: uppercase;
+    color: var(--accent);
+    font-weight: 700;
+    margin-bottom: 0.5rem;
+  }
+
+  .timeline-item h3 {
+    font-family: 'Bebas Neue', cursive;
+    font-size: 1.3rem;
+    letter-spacing: 1px;
+    margin-bottom: 0.5rem;
+  }
+
+  .timeline-item p {
+    color: var(--text-dim);
+    font-size: 0.92rem;
+    line-height: 1.8;
+  }
+
+  /* ── NUCLEAR CALLOUT ── */
+  .callout {
+    margin: 4rem 0;
+    padding: 2.5rem;
+    border-left: 3px solid var(--danger);
+    background: rgba(255,61,90,0.04);
+    border-radius: 0 16px 16px 0;
+  }
+
+  .callout .callout-label {
+    font-size: 0.7rem;
+    letter-spacing: 3px;
+    text-transform: uppercase;
+    color: var(--danger);
+    font-weight: 700;
+    margin-bottom: 0.75rem;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+  }
+
+  .callout p {
+    color: var(--text-dim);
+    font-size: 0.95rem;
+    line-height: 1.8;
+  }
+
+  .callout strong {
+    color: var(--text);
+  }
+
+  /* ── RECONSTRUCTION GRID ── */
+  .recon-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 1.5rem;
+    margin-top: 2rem;
+  }
+
+  .recon-card {
+    background: var(--card-bg);
+    border: 1px solid var(--card-border);
+    border-radius: 14px;
+    padding: 2rem;
+    text-align: center;
+    transition: transform 0.3s;
+  }
+
+  .recon-card:hover { transform: translateY(-4px); }
+
+  .recon-bar-track {
+    width: 100%;
+    height: 6px;
+    background: rgba(255,255,255,0.05);
+    border-radius: 3px;
+    margin: 1.2rem 0 0.8rem;
+    overflow: hidden;
+  }
+
+  html:not(.dark) .recon-bar-track {
+    background: rgba(0,0,0,0.06);
+  }
+
+  .recon-bar-fill {
+    height: 100%;
+    border-radius: 3px;
+    background: var(--gradient-accent);
+    width: 0;
+    transition: width 1.5s cubic-bezier(0.22, 1, 0.36, 1);
+  }
+
+  .recon-percentage {
+    font-family: 'Bebas Neue', cursive;
+    font-size: 2.2rem;
+    color: var(--accent);
+  }
+
+  .recon-icon {
+    font-size: 1.4rem;
+    color: var(--accent);
+    margin-bottom: 0.5rem;
+    opacity: 0.6;
+  }
+
+  .recon-label {
+    font-size: 0.82rem;
+    color: var(--text-dim);
+    letter-spacing: 1px;
+    text-transform: uppercase;
+  }
+
+  /* ── CONCLUSION ── */
+  .conclusion {
+    text-align: center;
+    padding: 8rem 2rem;
+    position: relative;
+  }
+
+  .conclusion::before {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 600px;
+    height: 600px;
+    border-radius: 50%;
+    background: radial-gradient(circle, rgba(0,229,255,0.06), transparent 70%);
+    pointer-events: none;
+  }
+
+  .conclusion .big-quote {
+    font-family: 'Bebas Neue', cursive;
+    font-size: clamp(2rem, 5vw, 3.5rem);
+    line-height: 1.15;
+    max-width: 800px;
+    margin: 0 auto 2rem;
+    position: relative;
+    z-index: 1;
+  }
+
+  .conclusion .big-quote .highlight {
+    color: var(--accent);
+  }
+
+  .conclusion p {
+    color: var(--text-dim);
+    max-width: 600px;
+    margin: 0 auto;
+    position: relative;
+    z-index: 1;
+    line-height: 1.8;
+  }
+
+  /* ── FOOTER ── */
+  footer {
+    text-align: center;
+    padding: 3rem 2rem;
+    font-size: 0.75rem;
+    color: var(--text-dim);
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    border-top: 1px solid var(--card-border);
+  }
+
+  /* ── SCROLL ANIMATIONS ── */
+  .reveal {
+    opacity: 0;
+    transform: translateY(40px);
+    transition: opacity 0.8s cubic-bezier(0.22, 1, 0.36, 1), transform 0.8s cubic-bezier(0.22, 1, 0.36, 1);
+  }
+
+  .reveal.visible {
+    opacity: 1;
+    transform: translateY(0);
+  }
+
+  /* ── MOBILE ── */
+  @media (max-width: 768px) {
+    .nav-links { display: none; }
+    .nav-links.open {
+      display: flex;
+      flex-direction: column;
+      position: absolute;
+      top: 100%;
+      left: 0;
+      right: 0;
+      background: var(--bg2);
+      padding: 1.5rem 2rem;
+      gap: 1.2rem;
+      border-bottom: 1px solid var(--card-border);
+    }
+    .nav-burger { display: block; }
+    .argument-grid { grid-template-columns: 1fr; }
+    .comparison-strip { grid-template-columns: 1fr; }
+    .comp-item:not(:last-child)::after {
+      right: 20%;
+      top: auto;
+      bottom: 0;
+      height: 1px;
+      width: 60%;
+    }
+    .stats-banner { grid-template-columns: 1fr 1fr; }
+    .recon-grid { grid-template-columns: 1fr; }
+    .timeline { padding-left: 2rem; }
+    section { padding: 4rem 1.2rem; }
+  }
+</style>
+</head>
+<body>
+
+<!-- NAV -->
+<nav>
+  <div class="nav-logo"><i class="fa-solid fa-earth-americas"></i> Tectonic</div>
+  <ul class="nav-links" id="navLinks">
+    <li><a href="#argument">Argument</a></li>
+    <li><a href="#casestudy">Case Study</a></li>
+    <li><a href="#recovery">Recovery</a></li>
+    <li><a href="#conclusion">Verdict</a></li>
+  </ul>
+  <button class="nav-burger" id="navBurger" aria-label="Toggle navigation"><i class="fa-solid fa-bars"></i></button>
+</nav>
+
+<!-- HERO -->
+<div class="hero">
+  <div class="hero-badge"><span class="dot"></span>Geography &mdash; Tectonic Hazards</div>
+  <h1>
+    Which hazard<br>
+    is the<br>
+    <span class="line-accent">biggest threat?</span>
+  </h1>
+  <p class="hero-sub">Earthquakes, tsunamis, and volcanoes each cause damage to things in their own way &mdash; but one is clearly the most dangerous.</p>
+  <div class="hero-scroll">
+    <a href="#argument">
+      Scroll down to find out more...
+    </a>
+  </div>
+</div>
+
+<!-- COMPARISON -->
+<section>
+  <div class="reveal">
+    <div class="section-label">Tectonic Hazard Comparison</div>
+    <div class="section-title">Three tectonic forces. One is the biggest</div>
+  </div>
+  <div class="comparison-strip reveal">
+    <div class="comp-item">
+      <div class="comp-icon"><i class="fa-solid fa-volcano"></i></div>
+      <h4>Volcanoes</h4>
+      <p style="color:var(--text-dim); font-size:0.85rem;">
+        These big mountains filled with magma are deadly, localised mosters. They can destroy cities, and can cause catastrophic damage, but they can be discovered in advance by computers.
+      </p>
+      <span class="comp-verdict verdict-low">Lower threat</span>
+    </div>
+    <div class="comp-item">
+      <div class="comp-icon"><i class="fa-solid fa-house-crack"></i></div>
+      <h4>Earthquakes</h4>
+      <p style="color:var(--text-dim); font-size:0.85rem;">
+        Sudden and devastating, they emit seismic waves, that cause bulidings to break and fall over. They happen without warning, and can be bad if they are a high magnitude.
+      </p>
+      <span class="comp-verdict verdict-med">High threat</span>
+    </div>
+    <div class="comp-item active">
+      <div class="comp-icon"><i class="fa-solid fa-water"></i></div>
+      <h4>Tsunamis</h4>
+      <p style="color:var(--text-dim); font-size:0.85rem;">Combines earthquake destruction with obliterating waves. They distrupt the place with an earthquake, then sends out a massive wall of water to destroy the place.</p>
+      <span class="comp-verdict verdict-high">Greatest threat</span>
+    </div>
+  </div>
+</section>
+
+<!-- ARGUMENT -->
+<section id="argument">
+  <div class="reveal">
+    <div class="section-label">The Argument</div>
+    <div class="section-title">Why tsunamis are<br>the deadliest hazard</div>
+  </div>
+  <div class="argument-grid">
+    <div class="argument-card reveal">
+      <div class="icon"><i class="fa-solid fa-burst"></i></div>
+      <h3>Double destruction</h3>
+      <p>Tsunamis don't just come as a wave. They happen because of earthquakes that start under the sea, meaning affected areas suffer ground shaking <em>and</em> a massive wall of water. Two disasters in one event.</p>
+    </div>
+    <div class="argument-card reveal">
+      <div class="icon"><i class="fa-solid fa-gauge-high"></i></div>
+      <h3>Speed &amp; scale</h3>
+      <p>Waves travel at up to 800 km/h across open ocean and can wipe entire cities off the map in minutes, giving populations almost no time to react.</p>
+    </div>
+    <div class="argument-card reveal">
+      <div class="icon"><i class="fa-solid fa-shield-halved"></i></div>
+      <h3>Almost impossible to defend</h3>
+      <p>Low-lying coastal buildings face total obliteration. Sea walls help, but even Japan's 12 m barriers were overwhelmed in 2011. Upgraded 18 m walls may still not be enough.</p>
+    </div>
+    <div class="argument-card reveal">
+      <div class="icon"><i class="fa-solid fa-people-group"></i></div>
+      <h3>Massive displacement</h3>
+      <p>The 2011 Japan tsunami left over 300,000 people homeless, requiring food, water, shelter, and medicine on a scale few other natural hazards demand.</p>
+    </div>
+  </div>
+</section>
+
+<!-- STATS -->
+<section>
+  <div class="stats-banner reveal">
+    <div class="stat-box">
+      <div class="stat-icon"><i class="fa-solid fa-person-shelter"></i></div>
+      <div class="stat-number">300K+</div>
+      <div class="stat-label">Left homeless</div>
+    </div>
+    <div class="stat-box">
+      <div class="stat-icon"><i class="fa-solid fa-hand-holding-heart"></i></div>
+      <div class="stat-number">$1B+</div>
+      <div class="stat-label">Red Cross donations</div>
+    </div>
+    <div class="stat-box">
+      <div class="stat-icon"><i class="fa-solid fa-hammer"></i></div>
+      <div class="stat-number">¥23T</div>
+      <div class="stat-label">Rebuild budget</div>
+    </div>
+    <div class="stat-box">
+      <div class="stat-icon"><i class="fa-solid fa-kit-medical"></i></div>
+      <div class="stat-number">30K+</div>
+      <div class="stat-label">Emergency kits</div>
+    </div>
+  </div>
+</section>
+
+<!-- CASE STUDY -->
+<section id="casestudy">
+  <div class="reveal">
+    <div class="section-label">Case Study &mdash; Japan 2011</div>
+    <div class="section-title">Tōhoku earthquake &amp;<br>tsunami response</div>
+    <p style="color:var(--text-dim); max-width:700px; margin-bottom:1rem;">The 2011 disaster demonstrated the catastrophic chain-reaction a tsunami triggers &mdash; from immediate destruction to nuclear crisis to decades of recovery.</p>
+  </div>
+
+  <div class="timeline">
+    <div class="timeline-item reveal">
+      <div class="tl-category"><i class="fa-solid fa-truck-medical"></i> Immediate Response</div>
+      <h3>Rescue &amp; access</h3>
+      <p>Rescue services and the army moved into the affected area rapidly, clearing roads and creating access paths. However, the enormous amount of silt deposited by the tsunami made counting deaths extremely difficult.</p>
+    </div>
+    <div class="timeline-item reveal">
+      <div class="tl-category"><i class="fa-solid fa-hospital"></i> Immediate Response</div>
+      <h3>Medical emergency</h3>
+      <p>Many hospitals were destroyed or damaged. Field hospitals were set up and doctors and nurses were flown from across the country. Patients were evacuated far from the emergency zone for treatment.</p>
+    </div>
+    <div class="timeline-item reveal">
+      <div class="tl-category"><i class="fa-solid fa-tents"></i> Humanitarian Aid</div>
+      <h3>Shelter &amp; relief</h3>
+      <p>The army built temporary shelters for over 300,000 displaced people. The Japanese Red Cross received over $1 billion in donations and distributed 30,000+ emergency relief kits and 14,000 sleeping kits.</p>
+    </div>
+    <div class="timeline-item reveal">
+      <div class="tl-category"><i class="fa-solid fa-plane-arrival"></i> Infrastructure</div>
+      <h3>Transport restoration</h3>
+      <p>Sendai Airport was restored through a joint effort with the US Army by 29 March. About 347 km of the 675 km Tōhoku Expressway linking the region to Tokyo was damaged &mdash; fully repaired and reopened by 24 March.</p>
+    </div>
+    <div class="timeline-item reveal">
+      <div class="tl-category"><i class="fa-solid fa-city"></i> Long-term</div>
+      <h3>Reconstruction begins</h3>
+      <p>The government established a Reconstruction Design Council with a budget exceeding ¥23 trillion to rebuild houses and infrastructure in the worst-affected areas.</p>
+    </div>
+    <div class="timeline-item reveal">
+      <div class="tl-category"><i class="fa-solid fa-shield-halved"></i> Long-term</div>
+      <h3>Upgraded defences</h3>
+      <p>The original 12 m tsunami barriers were replaced with 18 m high walls. However, scientists have warned this may still be insufficient against a similar-magnitude earthquake.</p>
+    </div>
+  </div>
+</section>
+
+<!-- NUCLEAR CALLOUT -->
+<section>
+  <div class="callout reveal">
+    <div class="callout-label"><i class="fa-solid fa-radiation"></i> Nuclear crisis &mdash; Fukushima</div>
+    <p>A 20 km evacuation zone was declared around the Fukushima plant. Water was continuously poured into damaged reactors to cool melting fuel rods. By November 2011 the reactors were cooled and stabilised, but <strong>the long-term challenge of removing radioactive contamination from air, water and land remains</strong>. Former UK nuclear safety expert John Price estimated it <strong>"might be 100 years before melting fuel rods can be safely removed."</strong></p>
+  </div>
+</section>
+
+<!-- RECOVERY -->
+<section id="recovery">
+  <div class="reveal">
+    <div class="section-label">Recovery Progress</div>
+    <div class="section-title">Infrastructure restored<br>by November 2011</div>
+  </div>
+  <div class="recon-grid reveal" id="reconGrid">
+    <div class="recon-card">
+      <div class="recon-icon"><i class="fa-solid fa-bolt"></i></div>
+      <div class="recon-percentage">96%</div>
+      <div class="recon-bar-track"><div class="recon-bar-fill" data-width="96"></div></div>
+      <div class="recon-label">Electricity</div>
+    </div>
+    <div class="recon-card">
+      <div class="recon-icon"><i class="fa-solid fa-droplet"></i></div>
+      <div class="recon-percentage">98%</div>
+      <div class="recon-bar-track"><div class="recon-bar-fill" data-width="98"></div></div>
+      <div class="recon-label">Water supply</div>
+    </div>
+    <div class="recon-card">
+      <div class="recon-icon"><i class="fa-solid fa-phone"></i></div>
+      <div class="recon-percentage">99%</div>
+      <div class="recon-bar-track"><div class="recon-bar-fill" data-width="99"></div></div>
+      <div class="recon-label">Landline network</div>
+    </div>
+  </div>
+</section>
+
+<!-- CONCLUSION -->
+<section id="conclusion" class="conclusion">
+  <div class="reveal">
+    <div class="big-quote">&ldquo;Tsunamis combine the violence of an earthquake with the <span class="highlight">unstoppable force of the ocean</span> &mdash; making them the single greatest tectonic threat to human life.&rdquo;</div>
+    <p>From dual-impact destruction to near-impossible coastal defence, from mass displacement to triggering secondary disasters like nuclear meltdowns, the evidence from Japan 2011 makes the case unequivocal.</p>
+  </div>
+</section>
+
+<footer>
+  Geography &mdash; Tectonic Hazards &copy; 2025
+</footer>
+
+<script>
+  /* ── Dark mode detection ── */
+  if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
+    document.documentElement.classList.add('dark');
+  }
+  window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', function(event) {
+    if (event.matches) {
+      document.documentElement.classList.add('dark');
+    } else {
+      document.documentElement.classList.remove('dark');
+    }
+  });
+
+  /* ── Mobile nav ── */
+  document.getElementById('navBurger').addEventListener('click', function() {
+    document.getElementById('navLinks').classList.toggle('open');
+  });
+
+  /* Close nav on link click */
+  document.querySelectorAll('.nav-links a').forEach(function(link) {
+    link.addEventListener('click', function() {
+      document.getElementById('navLinks').classList.remove('open');
+    });
+  });
+
+  /* ── Scroll reveal ── */
+  var reveals = document.querySelectorAll('.reveal');
+  var reconAnimated = false;
+
+  function checkReveal() {
+    var windowHeight = window.innerHeight;
+    reveals.forEach(function(el) {
+      var top = el.getBoundingClientRect().top;
+      if (top < windowHeight - 80) {
+        el.classList.add('visible');
+      }
+    });
+
+    /* Animate reconstruction bars */
+    if (!reconAnimated) {
+      var reconGrid = document.getElementById('reconGrid');
+      if (reconGrid) {
+        var reconTop = reconGrid.getBoundingClientRect().top;
+        if (reconTop < windowHeight - 60) {
+          reconAnimated = true;
+          document.querySelectorAll('.recon-bar-fill').forEach(function(bar) {
+            var w = bar.getAttribute('data-width');
+            setTimeout(function() {
+              bar.style.width = w + '%';
+            }, 200);
+          });
+        }
+      }
+    }
+  }
+
+  window.addEventListener('scroll', checkReveal);
+  window.addEventListener('load', checkReveal);
+</script>
+
+</body>
+</html>
 

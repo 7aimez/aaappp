@@ -437,11 +437,15 @@
   .verdict-med { background: rgba(255,179,71,0.12); color: var(--warn); }
 
   /* ── STATS BANNER ── */
+  .section-stats {
+    padding-top: 0;
+    padding-bottom: 0;
+  }
+
   .stats-banner {
     display: grid;
     grid-template-columns: repeat(4, 1fr);
     gap: 1.5rem;
-    margin: 4rem 0;
   }
 
   .stat-box {
@@ -733,6 +737,7 @@
     .recon-grid { grid-template-columns: 1fr; }
     .timeline { padding-left: 2rem; }
     section { padding: 4rem 1.2rem; }
+    .section-stats { padding-top: 0; padding-bottom: 0; }
   }
 </style>
 </head>
@@ -829,7 +834,7 @@
 </section>
 
 <!-- STATS -->
-<section>
+<section class="section-stats">
   <div class="stats-banner reveal">
     <div class="stat-box">
       <div class="stat-icon"><i class="fa-solid fa-person-shelter"></i></div>
@@ -928,4 +933,3 @@
 
 </body>
 </html>
-

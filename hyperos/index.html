@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>HyprOS - Complete Desktop Environment</title>
+    <title>HyprOS</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;700&family=Inter:wght@300;400;600;800&display=swap" rel="stylesheet">
@@ -121,30 +121,6 @@
             opacity: 0.9;
         }
 
-        .desktop-icon {
-            position: absolute;
-            width: 80px;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            gap: 4px;
-            cursor: pointer;
-            transition: transform 0.2s;
-            padding: 8px;
-            border-radius: 8px;
-        }
-        .desktop-icon:hover {
-            background: rgba(255,255,255,0.05);
-        }
-        .desktop-icon.selected {
-            background: rgba(203, 166, 247, 0.2);
-            border: 1px solid rgba(203, 166, 247, 0.4);
-        }
-        .desktop-icon.dragging {
-            opacity: 0.7;
-            z-index: 1000;
-        }
-
         input[type=range] {
             -webkit-appearance: none;
             background: transparent;
@@ -157,6 +133,7 @@
             background: #cba6f7;
             cursor: pointer;
             margin-top: -5px;
+            box-shadow: 0 0 10px rgba(203, 166, 247, 0.5);
         }
         input[type=range]::-webkit-slider-runnable-track {
             width: 100%;
@@ -266,6 +243,44 @@
             background: rgba(203, 166, 247, 0.1);
             border-color: rgba(203, 166, 247, 0.3);
         }
+
+        .desktop-icon {
+            position: absolute;
+            width: 80px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 4px;
+            cursor: pointer;
+            transition: transform 0.2s;
+            padding: 8px;
+            border-radius: 8px;
+            z-index: 5;
+        }
+        .desktop-icon:hover {
+            background: rgba(255,255,255,0.1);
+        }
+        .desktop-icon.selected {
+            background: rgba(203, 166, 247, 0.3);
+            border: 1px solid rgba(203, 166, 247, 0.5);
+        }
+        .desktop-icon.dragging {
+            opacity: 0.7;
+            z-index: 1000;
+            cursor: grabbing;
+        }
+        .desktop-icon-name {
+            font-size: 11px;
+            text-align: center;
+            color: #cdd6f4;
+            text-shadow: 0 1px 2px rgba(0,0,0,0.8);
+            max-width: 100%;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+            padding: 2px 4px;
+            border-radius: 3px;
+        }
     </style>
 <base target="_blank">
 </head>
@@ -306,7 +321,7 @@
                     <i class="fas fa-search absolute left-3 top-1/2 transform -translate-y-1/2 text-hypr-muted text-xs"></i>
                     <input type="text" id="global-search" 
                            class="w-full bg-hypr-surface/50 border border-hypr-border rounded-lg py-1.5 pl-9 pr-20 text-sm focus:border-hypr-accent focus:outline-none transition-colors"
-                           placeholder="Search files, apps, web..." onkeydown="handleGlobalSearch(event)">
+                           placeholder="Search files, apps, web..." autocomplete="off">
                     <div class="absolute right-2 top-1/2 transform -translate-y-1/2 flex gap-1">
                         <button onclick="searchWeb()" class="text-xs text-hypr-muted hover:text-hypr-accent px-2 py-0.5 rounded hover:bg-white/5">Web</button>
                         <button onclick="searchFiles()" class="text-xs text-hypr-muted hover:text-hypr-accent px-2 py-0.5 rounded hover:bg-white/5">Files</button>
@@ -553,7 +568,6 @@
             trash: {}
         };
 
-        let currentPath = ['Home'];
         let quickLinks = [
             { name: 'Google', url: 'https://google.com', icon: 'fa-google', color: 'text-blue-400' },
             { name: 'GitHub', url: 'https://github.com', icon: 'fa-github', color: 'text-white' },
@@ -589,6 +603,12 @@
             { id: 'settings', name: 'Settings', icon: 'fa-cog', color: 'text-hypr-accent' },
         ];
 
+        const recentFiles = [
+            { name: 'project.py', icon: 'fa-file-code', color: 'text-blue-400', path: '~/dev' },
+            { name: 'notes.md', icon: 'fa-file-alt', color: 'text-white', path: '~/docs' },
+            { name: 'screenshot.png', icon: 'fa-image', color: 'text-green-400', path: '~/pics' },
+        ];
+
         const els = {
             wallpaper: document.getElementById('wallpaper'),
             wallpaperDim: document.getElementById('wallpaper-dim'),
@@ -604,7 +624,8 @@
             windowTitleText: document.getElementById('window-title-text'),
             powerMenu: document.getElementById('power-menu'),
             desktopIcons: document.getElementById('desktop-icons'),
-            contextMenu: document.getElementById('context-menu')
+            contextMenu: document.getElementById('context-menu'),
+            globalSearch: document.getElementById('global-search')
         };
 
         // Initialize
@@ -616,6 +637,43 @@
             updateSystemInfo();
             setInterval(updateSystemInfo, 2000);
             setupGlobalEvents();
+            setupSearchBar();
+        }
+
+        function setupSearchBar() {
+            els.globalSearch.addEventListener('keydown', (e) => {
+                if (e.key === 'Enter') {
+                    e.preventDefault();
+                    const query = els.globalSearch.value.trim();
+                    if (!query) return;
+                    
+                    // Check if it's a URL
+                    if (query.includes('.') && !query.includes(' ')) {
+                        // Looks like a URL
+                        let url = query;
+                        if (!url.startsWith('http')) {
+                            url = 'https://' + url;
+                        }
+                        openApp('browser');
+                        // Set the URL in the browser after it opens
+                        setTimeout(() => {
+                            const browserWin = state.windows.find(w => w.app.id === 'browser');
+                            if (browserWin) {
+                                const urlInput = document.getElementById(`url-${browserWin.id}`);
+                                const iframe = document.getElementById(`iframe-${browserWin.id}`);
+                                if (urlInput && iframe) {
+                                    urlInput.value = url;
+                                    iframe.src = url;
+                                }
+                            }
+                        }, 100);
+                    } else {
+                        // Search query
+                        searchWeb();
+                    }
+                    els.globalSearch.value = '';
+                }
+            });
         }
 
         function loadState() {
@@ -644,81 +702,130 @@
             }));
         }
 
-        // Desktop Icons
+        // Desktop Icons - FIXED
         function renderDesktopIcons() {
-            els.desktopIcons.innerHTML = desktopIcons.map(icon => `
-                <div class="desktop-icon ${icon.isTrash ? 'trash-icon' : ''}" 
-                     id="desktop-icon-${icon.id}"
-                     style="left: ${icon.x}px; top: ${icon.y}px;"
-                     onmousedown="startIconDrag(event, '${icon.id}')"
-                     ontouchstart="startIconDrag(event, '${icon.id}')"
-                     onclick="handleIconClick('${icon.id}', event)"
-                     oncontextmenu="showIconContextMenu(event, '${icon.id}')">
-                    <i class="fas ${icon.icon} text-4xl ${icon.color}"></i>
-                    <span class="text-xs text-center bg-hypr-bg/50 px-2 py-0.5 rounded">${icon.name}</span>
-                </div>
-            `).join('');
+            els.desktopIcons.innerHTML = '';
+            desktopIcons.forEach(icon => {
+                const iconEl = document.createElement('div');
+                iconEl.className = 'desktop-icon';
+                iconEl.id = `desktop-icon-${icon.id}`;
+                iconEl.style.left = icon.x + 'px';
+                iconEl.style.top = icon.y + 'px';
+                
+                iconEl.innerHTML = `
+                    <i class="fas ${icon.icon} text-4xl ${icon.color} drop-shadow-lg"></i>
+                    <span class="desktop-icon-name">${icon.name}</span>
+                `;
+                
+                // Mouse events
+                iconEl.addEventListener('mousedown', (e) => handleIconMouseDown(e, icon.id));
+                iconEl.addEventListener('click', (e) => handleIconClick(e, icon.id));
+                iconEl.addEventListener('dblclick', (e) => handleIconDoubleClick(e, icon.id));
+                iconEl.addEventListener('contextmenu', (e) => showIconContextMenu(e, icon.id));
+                
+                // Touch events
+                iconEl.addEventListener('touchstart', (e) => handleIconTouchStart(e, icon.id), { passive: false });
+                iconEl.addEventListener('touchmove', (e) => handleIconTouchMove(e, icon.id), { passive: false });
+                iconEl.addEventListener('touchend', (e) => handleIconTouchEnd(e, icon.id));
+                
+                els.desktopIcons.appendChild(iconEl);
+            });
         }
 
-        let draggedIcon = null;
-        let iconOffset = { x: 0, y: 0 };
+        let draggedIconId = null;
+        let iconDragOffset = { x: 0, y: 0 };
+        let iconTouchStartTime = 0;
+        let iconTouchMoved = false;
 
-        function startIconDrag(e, iconId) {
-            if (e.button === 2) return; // Right click
-            e.preventDefault();
+        function handleIconMouseDown(e, iconId) {
+            if (e.button !== 0) return; // Only left click
             e.stopPropagation();
             
             const icon = desktopIcons.find(i => i.id === iconId);
-            const el = document.getElementById(`desktop-icon-${iconId}`);
+            iconDragOffset.x = e.clientX - icon.x;
+            iconDragOffset.y = e.clientY - icon.y;
+            draggedIconId = iconId;
             
-            const clientX = e.touches ? e.touches[0].clientX : e.clientX;
-            const clientY = e.touches ? e.touches[0].clientY : e.clientY;
+            document.getElementById(`desktop-icon-${iconId}`).classList.add('dragging');
             
-            iconOffset.x = clientX - icon.x;
-            iconOffset.y = clientY - icon.y;
-            draggedIcon = iconId;
-            
-            el.classList.add('dragging');
-            
-            document.addEventListener('mousemove', moveIcon);
-            document.addEventListener('mouseup', endIconDrag);
-            document.addEventListener('touchmove', moveIcon, { passive: false });
-            document.addEventListener('touchend', endIconDrag);
+            document.addEventListener('mousemove', handleIconMouseMove);
+            document.addEventListener('mouseup', handleIconMouseUp);
         }
 
-        function moveIcon(e) {
-            if (!draggedIcon) return;
-            e.preventDefault();
+        function handleIconMouseMove(e) {
+            if (!draggedIconId) return;
             
-            const clientX = e.touches ? e.touches[0].clientX : e.clientX;
-            const clientY = e.touches ? e.touches[0].clientY : e.clientY;
+            const icon = desktopIcons.find(i => i.id === draggedIconId);
+            icon.x = Math.max(0, Math.min(window.innerWidth - 100, e.clientX - iconDragOffset.x));
+            icon.y = Math.max(50, Math.min(window.innerHeight - 150, e.clientY - iconDragOffset.y));
             
-            const icon = desktopIcons.find(i => i.id === draggedIcon);
-            icon.x = Math.max(0, Math.min(window.innerWidth - 100, clientX - iconOffset.x));
-            icon.y = Math.max(50, Math.min(window.innerHeight - 150, clientY - iconOffset.y));
-            
-            const el = document.getElementById(`desktop-icon-${draggedIcon}`);
+            const el = document.getElementById(`desktop-icon-${draggedIconId}`);
             el.style.left = icon.x + 'px';
             el.style.top = icon.y + 'px';
         }
 
-        function endIconDrag() {
-            if (draggedIcon) {
-                const el = document.getElementById(`desktop-icon-${draggedIcon}`);
-                el.classList.remove('dragging');
-                draggedIcon = null;
+        function handleIconMouseUp(e) {
+            if (draggedIconId) {
+                document.getElementById(`desktop-icon-${draggedIconId}`).classList.remove('dragging');
+                draggedIconId = null;
                 saveState();
             }
-            document.removeEventListener('mousemove', moveIcon);
-            document.removeEventListener('mouseup', endIconDrag);
-            document.removeEventListener('touchmove', moveIcon);
-            document.removeEventListener('touchend', endIconDrag);
+            document.removeEventListener('mousemove', handleIconMouseMove);
+            document.removeEventListener('mouseup', handleIconMouseUp);
         }
 
-        function handleIconClick(iconId, e) {
-            if (e.button !== 0) return; // Only left click
+        // Touch handling for icons
+        function handleIconTouchStart(e, iconId) {
+            e.stopPropagation();
+            iconTouchStartTime = Date.now();
+            iconTouchMoved = false;
             
+            const touch = e.touches[0];
             const icon = desktopIcons.find(i => i.id === iconId);
+            iconDragOffset.x = touch.clientX - icon.x;
+            iconDragOffset.y = touch.clientY - icon.y;
+            draggedIconId = iconId;
+        }
+
+        function handleIconTouchMove(e) {
+            if (!draggedIconId) return;
+            e.preventDefault();
+            iconTouchMoved = true;
+            
+            const touch = e.touches[0];
+            const icon = desktopIcons.find(i => i.id === draggedIconId);
+            icon.x = Math.max(0, Math.min(window.innerWidth - 100, touch.clientX - iconDragOffset.x));
+            icon.y = Math.max(50, Math.min(window.innerHeight - 150, touch.clientY - iconDragOffset.y));
+            
+            const el = document.getElementById(`desktop-icon-${draggedIconId}`);
+            el.style.left = icon.x + 'px';
+            el.style.top = icon.y + 'px';
+        }
+
+        function handleIconTouchEnd(e) {
+            if (draggedIconId) {
+                const touchDuration = Date.now() - iconTouchStartTime;
+                
+                // If it was a tap (not drag), treat as click
+                if (!iconTouchMoved && touchDuration < 300) {
+                    handleIconDoubleClick(e, draggedIconId);
+                }
+                
+                draggedIconId = null;
+                saveState();
+            }
+        }
+
+        function handleIconClick(e, iconId) {
+            // Single click just selects
+            document.querySelectorAll('.desktop-icon').forEach(el => el.classList.remove('selected'));
+            document.getElementById(`desktop-icon-${iconId}`).classList.add('selected');
+        }
+
+        function handleIconDoubleClick(e, iconId) {
+            e.stopPropagation();
+            const icon = desktopIcons.find(i => i.id === iconId);
+            
             if (icon.isTrash) {
                 openApp('trash');
             } else if (icon.path) {
@@ -728,10 +835,12 @@
 
         function showIconContextMenu(e, iconId) {
             e.preventDefault();
+            e.stopPropagation();
+            
             const icon = desktopIcons.find(i => i.id === iconId);
             
             showContextMenu(e.clientX, e.clientY, [
-                { label: 'Open', icon: 'fa-folder-open', action: () => handleIconClick(iconId, { button: 0 }) },
+                { label: 'Open', icon: 'fa-folder-open', action: () => handleIconDoubleClick(e, iconId) },
                 { label: icon.isTrash ? 'Empty Trash' : 'Rename', icon: 'fa-edit', action: () => renameDesktopIcon(iconId) },
                 !icon.isTrash && { label: 'Delete', icon: 'fa-trash', action: () => deleteDesktopIcon(iconId) }
             ].filter(Boolean));
@@ -797,10 +906,9 @@
             return false;
         }
 
-        function deleteFile(path, name) {
+        function moveToTrash(path, name) {
             const folder = getFolder(path);
             if (folder && folder.children && folder.children[name]) {
-                // Move to trash
                 fileSystem.trash[name + '_' + Date.now()] = folder.children[name];
                 delete folder.children[name];
                 saveState();
@@ -809,12 +917,7 @@
             return false;
         }
 
-        function moveToTrash(path, name) {
-            return deleteFile(path, name);
-        }
-
         function restoreFromTrash(name) {
-            // Simplified restore to Home
             if (fileSystem.trash[name]) {
                 fileSystem.root.children['Home'].children[name] = fileSystem.trash[name];
                 delete fileSystem.trash[name];
@@ -850,11 +953,8 @@
                         fileSystem = JSON.parse(e.target.result);
                         saveState();
                         showNotification('Import', 'File system imported successfully', 'fa-check');
-                        // Refresh any open file windows
                         state.windows.forEach(w => {
-                            if (w.app.id === 'files') {
-                                refreshFileWindow(w.id);
-                            }
+                            if (w.app.id === 'files') refreshFileWindow(w.id);
                         });
                     } catch (err) {
                         showNotification('Error', 'Invalid file system format', 'fa-exclamation');
@@ -918,7 +1018,7 @@
 
         function renderQuickLinks() {
             els.quickLinksList.innerHTML = quickLinks.map((link, i) => `
-                <div class="quick-link" onclick="openURL('${link.url}')">
+                <div class="quick-link group" onclick="openURL('${link.url}')">
                     <i class="fab ${link.icon} ${link.color} w-5"></i>
                     <span class="text-sm flex-1">${link.name}</span>
                     <button onclick="event.stopPropagation(); editQuickLink(${i})" class="text-hypr-muted hover:text-hypr-text opacity-0 group-hover:opacity-100">
@@ -963,11 +1063,11 @@
         }
 
         function getRandomPosition() {
-            const maxX = window.innerWidth - 750;
-            const maxY = window.innerHeight - 550;
+            const maxX = Math.max(50, window.innerWidth - 850);
+            const maxY = Math.max(100, window.innerHeight - 650);
             return {
-                x: Math.max(50, Math.random() * maxX),
-                y: Math.max(100, Math.random() * maxY)
+                x: Math.floor(Math.random() * maxX) + 50,
+                y: Math.floor(Math.random() * maxY) + 80
             };
         }
 
@@ -988,17 +1088,17 @@
             let content = generateAppContent(appId, windowId, path);
 
             windowEl.innerHTML = `
-                <div class="h-10 border-b border-white/10 flex items-center justify-between px-3 cursor-grab bg-white/5 rounded-t-xl" 
+                <div class="h-10 border-b border-white/10 flex items-center justify-between px-3 bg-white/5 rounded-t-xl touch-none" 
                      onmousedown="startDrag(event, '${windowId}')" 
                      ontouchstart="startDrag(event, '${windowId}')">
-                    <div class="flex items-center gap-2">
+                    <div class="flex items-center gap-2 pointer-events-none">
                         <i class="fas ${app.icon} ${app.color} text-xs"></i>
                         <span class="text-xs font-mono text-hypr-muted" id="title-${windowId}">${app.name}</span>
                     </div>
                     <div class="flex items-center gap-2">
-                        <button onclick="minimizeWindow('${windowId}')" class="w-3 h-3 rounded-full bg-yellow-500/80 hover:bg-yellow-400"></button>
-                        <button onclick="maximizeWindow('${windowId}')" class="w-3 h-3 rounded-full bg-green-500/80 hover:bg-green-400"></button>
-                        <button onclick="closeWindow('${windowId}')" class="w-3 h-3 rounded-full bg-red-500/80 hover:bg-red-400"></button>
+                        <button onclick="minimizeWindow('${windowId}')" class="w-3 h-3 rounded-full bg-yellow-500/80 hover:bg-yellow-400 transition-colors"></button>
+                        <button onclick="maximizeWindow('${windowId}')" class="w-3 h-3 rounded-full bg-green-500/80 hover:bg-green-400 transition-colors"></button>
+                        <button onclick="closeWindow('${windowId}')" class="w-3 h-3 rounded-full bg-red-500/80 hover:bg-red-400 transition-colors"></button>
                     </div>
                 </div>
                 <div class="flex-1 overflow-hidden rounded-b-xl relative" id="content-${windowId}">
@@ -1021,7 +1121,7 @@
                             <div class="text-hypr-text mb-4 font-mono text-xs leading-relaxed opacity-80">
                                 <span class="text-hypr-accent">  OS:</span> HyprOS Web Edition<br>
                                 <span class="text-hypr-accent">  Host:</span> ${navigator.platform}<br>
-                                <span class="text-hypr-accent">  Browser:</span> ${navigator.userAgent.split(')')[0].split('(')[1]}<br>
+                                <span class="text-hypr-accent">  Browser:</span> ${navigator.userAgent.split(')')[0].split('(')[1] || 'Unknown'}<br>
                                 <span class="text-hypr-accent">  Memory:</span> ${navigator.deviceMemory || '?'}GB<br>
                                 <span class="text-hypr-accent">  Cores:</span> ${navigator.hardwareConcurrency || '?'}<br>
                                 <span class="text-hypr-accent">  Online:</span> ${navigator.onLine ? 'Yes' : 'No'}<br>
@@ -1113,7 +1213,7 @@
                                     <i class="fas fa-arrow-right"></i>
                                 </button>
                             </div>
-                            <iframe id="iframe-${windowId}" src="https://example.com" class="flex-1 bg-white"></iframe>
+                            <iframe id="iframe-${windowId}" src="https://example.com" class="flex-1 bg-white" sandbox="allow-same-origin allow-scripts allow-popups allow-forms"></iframe>
                         </div>`;
                 
                 case 'code':
@@ -1313,7 +1413,6 @@
             const file = folder.children[filename];
             if (file && file.type === 'file') {
                 openApp('code');
-                // Store reference to open this file in the new editor
                 setTimeout(() => {
                     const editorWin = state.windows[state.windows.length - 1];
                     if (editorWin && editorWin.app.id === 'code') {
@@ -1349,7 +1448,6 @@
         function permanentDelete(name) {
             delete fileSystem.trash[name];
             saveState();
-            // Refresh all trash windows
             state.windows.forEach(w => {
                 if (w.app.id === 'trash') {
                     document.getElementById(`trash-area-${w.id}`).innerHTML = renderTrash();
@@ -1367,8 +1465,8 @@
                     ${item.label}
                 </div>
             `).join('');
-            menu.style.left = x + 'px';
-            menu.style.top = y + 'px';
+            menu.style.left = Math.min(x, window.innerWidth - 180) + 'px';
+            menu.style.top = Math.min(y, window.innerHeight - 200) + 'px';
             menu.classList.remove('hidden');
         }
 
@@ -1422,14 +1520,12 @@
             const content = document.getElementById(`editor-${windowId}`).value;
             
             if (win.editingFile) {
-                // Save to existing file
                 const folder = getFolder(win.editingFile.path);
                 folder.children[win.editingFile.name].content = content;
                 folder.children[win.editingFile.name].lastModified = Date.now();
                 saveState();
                 showNotification('Editor', 'File saved', 'fa-save');
             } else {
-                // Save as new
                 const name = prompt('Save as:', 'untitled.txt');
                 if (name) {
                     createFile(['Home', 'Documents'], name, content);
@@ -1463,34 +1559,25 @@
                 const cmd = input.value.trim();
                 const term = document.getElementById('term-' + windowId);
                 
-                // Add to history
                 if (!commandHistory[windowId]) commandHistory[windowId] = [];
                 commandHistory[windowId].push(cmd);
                 
-                // Show command
                 const line = document.createElement('div');
                 line.className = 'text-green-400 mb-1';
                 line.innerHTML = `user@hypr-os ~ $ <span class="text-hypr-text">${cmd}</span>`;
                 term.insertBefore(line, term.lastElementChild);
                 
-                // Process command
                 let output = processCommand(cmd, windowId);
                 
                 if (output) {
                     const outLine = document.createElement('div');
                     outLine.className = 'text-hypr-text mb-2 whitespace-pre-wrap';
                     outLine.textContent = output;
-                    term.insertBefore(outLine, term.lastElementChild);
+                    term.insertBefore(outLine, term.lastElementLast);
                 }
                 
-                // Reset input
                 input.value = '';
                 term.scrollTop = term.scrollHeight;
-            } else if (e.key === 'ArrowUp') {
-                // Command history
-                if (commandHistory[windowId] && commandHistory[windowId].length > 0) {
-                    e.target.value = commandHistory[windowId][commandHistory[windowId].length - 1];
-                }
             }
         }
 
@@ -1503,8 +1590,7 @@
                 case 'help':
                     return `Available commands:
   help, clear, ls, pwd, cd, mkdir, touch, rm, cat, echo, neofetch
-  open <app>, edit <file>, mv <src> <dst>, cp <src> <dst>
-  date, whoami, uname, history, export, import`;
+  open <app>, edit <file>, date, whoami, uname, export, import`;
                 
                 case 'clear':
                     const term = document.getElementById('term-' + windowId);
@@ -1535,7 +1621,6 @@
                     return '/' + (w?.path || ['Home']).join('/');
                 
                 case 'cd':
-                    // Simplified - would need proper path resolution
                     return 'Use the file manager for navigation';
                 
                 case 'mkdir':
@@ -1599,13 +1684,6 @@ Memory: ${navigator.deviceMemory || '?'} GB`;
                     }
                     return 'Usage: open <app>';
                 
-                case 'edit':
-                    if (args[0]) {
-                        // Would open in code editor
-                        return `Would open ${args[0]} in editor`;
-                    }
-                    return 'Usage: edit <filename>';
-                
                 case 'date':
                     return new Date().toString();
                 
@@ -1614,9 +1692,6 @@ Memory: ${navigator.deviceMemory || '?'} GB`;
                 
                 case 'uname':
                     return 'HyprOS Web';
-                
-                case 'history':
-                    return (commandHistory[windowId] || []).map((c, i) => `${i + 1}  ${c}`).join('\n');
                 
                 case 'export':
                     exportFileSystem();
@@ -1656,7 +1731,8 @@ Memory: ${navigator.deviceMemory || '?'} GB`;
         }
 
         function browserReload(windowId) {
-            document.getElementById(`iframe-${windowId}`).src = document.getElementById(`iframe-${windowId}`).src;
+            const iframe = document.getElementById(`iframe-${windowId}`);
+            iframe.src = iframe.src;
         }
 
         // Music Functions
@@ -1717,7 +1793,7 @@ Memory: ${navigator.deviceMemory || '?'} GB`;
             player.audio.onended = () => nextTrack(windowId);
             
             updatePlaylist(windowId);
-            toggleMusic(windowId); // Auto play
+            updatePlayButton(windowId, false);
         }
 
         function toggleMusic(windowId) {
@@ -1730,13 +1806,18 @@ Memory: ${navigator.deviceMemory || '?'} GB`;
             const btn = document.getElementById(`play-btn-${windowId}`);
             if (player.audio.paused) {
                 player.audio.play();
-                btn.innerHTML = '<i class="fas fa-pause text-xl"></i>';
+                updatePlayButton(windowId, true);
                 startVisualizer(windowId);
             } else {
                 player.audio.pause();
-                btn.innerHTML = '<i class="fas fa-play text-xl ml-1"></i>';
+                updatePlayButton(windowId, false);
                 stopVisualizer(windowId);
             }
+        }
+
+        function updatePlayButton(windowId, isPlaying) {
+            const btn = document.getElementById(`play-btn-${windowId}`);
+            btn.innerHTML = isPlaying ? '<i class="fas fa-pause text-xl"></i>' : '<i class="fas fa-play text-xl ml-1"></i>';
         }
 
         function prevTrack(windowId) {
@@ -1825,7 +1906,6 @@ Memory: ${navigator.deviceMemory || '?'} GB`;
             const canvas = document.getElementById(`canvas-${windowId}`);
             const ctx = canvas.getContext('2d');
             
-            // Set canvas size
             const rect = canvas.parentElement.getBoundingClientRect();
             canvas.width = rect.width;
             canvas.height = rect.height;
@@ -1850,7 +1930,8 @@ Memory: ${navigator.deviceMemory || '?'} GB`;
                     clientY: touch.clientY
                 });
                 canvas.dispatchEvent(mouseEvent);
-            });
+            }, { passive: false });
+            
             canvas.addEventListener('touchmove', (e) => {
                 e.preventDefault();
                 const touch = e.touches[0];
@@ -1859,8 +1940,10 @@ Memory: ${navigator.deviceMemory || '?'} GB`;
                     clientY: touch.clientY
                 });
                 canvas.dispatchEvent(mouseEvent);
-            });
-            canvas.addEventListener('touchend', () => {
+            }, { passive: false });
+            
+            canvas.addEventListener('touchend', (e) => {
+                e.preventDefault();
                 const mouseEvent = new MouseEvent('mouseup', {});
                 canvas.dispatchEvent(mouseEvent);
             });
@@ -1913,16 +1996,14 @@ Memory: ${navigator.deviceMemory || '?'} GB`;
             }
         }
 
-        // Window Management
+        // Window Management with Touch Support
         function closeWindow(id) {
             const win = state.windows.find(w => w.id === id);
             if (win) {
-                // Stop audio if music
                 if (audioPlayers[id]) {
                     audioPlayers[id].audio.pause();
                     delete audioPlayers[id];
                 }
-                // Stop visualizer
                 stopVisualizer(id);
                 
                 win.element.style.transform = 'scale(0.9)';
@@ -1975,14 +2056,15 @@ Memory: ${navigator.deviceMemory || '?'} GB`;
             });
         }
 
-        // Dragging with touch support
-        let dragState = { windowId: null, offsetX: 0, offsetY: 0 };
+        let dragState = { windowId: null, offsetX: 0, offsetY: 0, isTouch: false };
 
         function startDrag(e, windowId) {
             if (e.target.tagName === 'BUTTON') return;
+            e.preventDefault();
             
-            const clientX = e.touches ? e.touches[0].clientX : e.clientX;
-            const clientY = e.touches ? e.touches[0].clientY : e.clientY;
+            const isTouch = e.type === 'touchstart';
+            const clientX = isTouch ? e.touches[0].clientX : e.clientX;
+            const clientY = isTouch ? e.touches[0].clientY : e.clientY;
             
             const win = state.windows.find(w => w.id === windowId);
             const rect = win.element.getBoundingClientRect();
@@ -1990,7 +2072,8 @@ Memory: ${navigator.deviceMemory || '?'} GB`;
             dragState = {
                 windowId,
                 offsetX: clientX - rect.left,
-                offsetY: clientY - rect.top
+                offsetY: clientY - rect.top,
+                isTouch
             };
             
             win.element.classList.add('dragging');
@@ -2000,16 +2083,18 @@ Memory: ${navigator.deviceMemory || '?'} GB`;
         function handleDragMove(e) {
             if (!dragState.windowId) return;
             
-            e.preventDefault();
-            const clientX = e.touches ? e.touches[0].clientX : e.clientX;
-            const clientY = e.touches ? e.touches[0].clientY : e.clientY;
+            const isTouch = e.type === 'touchmove';
+            if (isTouch) e.preventDefault();
+            
+            const clientX = isTouch ? e.touches[0].clientX : e.clientX;
+            const clientY = isTouch ? e.touches[0].clientY : e.clientY;
             
             const win = state.windows.find(w => w.id === dragState.windowId);
             win.element.style.left = (clientX - dragState.offsetX) + 'px';
             win.element.style.top = (clientY - dragState.offsetY) + 'px';
         }
 
-        function handleDragEnd() {
+        function handleDragEnd(e) {
             if (dragState.windowId) {
                 const win = state.windows.find(w => w.id === dragState.windowId);
                 if (win) win.element.classList.remove('dragging');
@@ -2019,7 +2104,6 @@ Memory: ${navigator.deviceMemory || '?'} GB`;
 
         // System Info
         function updateSystemInfo() {
-            // Battery
             if ('getBattery' in navigator) {
                 navigator.getBattery().then(battery => {
                     const level = Math.round(battery.level * 100);
@@ -2032,45 +2116,53 @@ Memory: ${navigator.deviceMemory || '?'} GB`;
                 });
             }
             
-            // Memory (if available)
-            if ('memory' in performance) {
-                const used = Math.round(performance.memory.usedJSHeapSize / 1048576);
-                const total = Math.round(performance.memory.totalJSHeapSize / 1048576);
-                // Could display this somewhere
-            }
-            
-            // CPU usage simulation (since we can't get real CPU)
             const cpuUsage = Math.floor(Math.random() * 30) + 5;
             document.getElementById('cpu-text').textContent = cpuUsage + '%';
             
-            // Online status
+            document.getElementById('volume-level').textContent = state.volume;
+            
             const wifiIcon = document.getElementById('wifi-icon');
             if (!navigator.onLine) {
                 wifiIcon.className = 'fas fa-wifi-slash text-hypr-error';
             }
         }
 
-        // Global Search
-        function handleGlobalSearch(e) {
-            if (e.key === 'Enter') {
-                const query = e.target.value;
-                if (query.startsWith('http') || query.includes('.')) {
-                    window.open('https://' + query.replace(/^https?:\/\//, ''), '_blank');
-                } else {
-                    searchFiles();
-                }
+        // Search Functions
+        function searchWeb() {
+            const query = els.globalSearch.value.trim();
+            if (query) {
+                window.open('https://google.com/search?q=' + encodeURIComponent(query), '_blank');
+                els.globalSearch.value = '';
             }
         }
 
-        function searchWeb() {
-            const query = document.getElementById('global-search').value;
-            if (query) window.open('https://google.com/search?q=' + encodeURIComponent(query), '_blank');
-        }
-
         function searchFiles() {
-            const query = document.getElementById('global-search').value.toLowerCase();
-            // Simple file search - would traverse filesystem
-            showNotification('Search', `Searching for: ${query}`, 'fa-search');
+            const query = els.globalSearch.value.toLowerCase().trim();
+            if (!query) return;
+            
+            // Search in file system
+            const results = [];
+            function searchFolder(folder, path) {
+                for (const [name, item] of Object.entries(folder.children || {})) {
+                    if (name.toLowerCase().includes(query)) {
+                        results.push({ name, path: [...path, name], type: item.type });
+                    }
+                    if (item.type === 'folder') {
+                        searchFolder(item, [...path, name]);
+                    }
+                }
+            }
+            searchFolder(fileSystem.root, []);
+            
+            if (results.length > 0) {
+                showNotification('Search', `Found ${results.length} result(s)`, 'fa-search');
+                // Open first result
+                if (results[0].type === 'file') {
+                    openApp('files', results[0].path.slice(0, -1));
+                }
+            } else {
+                showNotification('Search', 'No results found', 'fa-search');
+            }
         }
 
         // Other Functions
@@ -2103,30 +2195,22 @@ Memory: ${navigator.deviceMemory || '?'} GB`;
         }
 
         function toggleVolume() {
-            els.volumeOsd = els.volumeOsd || document.getElementById('volume-osd');
-            if (!els.volumeOsd) {
-                // Create volume OSD if not exists
-                const osd = document.createElement('div');
-                osd.id = 'volume-osd';
-                osd.className = 'hidden absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 hypr-blur rounded-2xl p-6 z-50 flex flex-col items-center gap-4';
-                osd.innerHTML = `
-                    <i class="fas fa-volume-up text-4xl text-hypr-accent"></i>
-                    <div class="w-48 h-2 bg-hypr-surface rounded-full overflow-hidden">
-                        <div id="osd-volume-bar" class="h-full bg-hypr-accent" style="width: ${state.volume}%"></div>
-                    </div>
-                    <span id="osd-volume-text" class="text-2xl font-bold">${state.volume}%</span>
-                `;
-                document.body.appendChild(osd);
-                els.volumeOsd = osd;
-            }
-            els.volumeOsd.classList.remove('hidden');
-            setTimeout(() => els.volumeOsd.classList.add('hidden'), 2000);
+            const osd = document.createElement('div');
+            osd.className = 'absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 hypr-blur rounded-2xl p-6 z-50 flex flex-col items-center gap-4 window-anim';
+            osd.innerHTML = `
+                <i class="fas fa-volume-up text-4xl text-hypr-accent"></i>
+                <div class="w-48 h-2 bg-hypr-surface rounded-full overflow-hidden">
+                    <div class="h-full bg-hypr-accent" style="width: ${state.volume}%"></div>
+                </div>
+                <span class="text-2xl font-bold">${state.volume}%</span>
+            `;
+            document.body.appendChild(osd);
+            setTimeout(() => osd.remove(), 2000);
         }
 
         function updateVolume(val) {
             state.volume = val;
             document.getElementById('volume-display').textContent = val + '%';
-            document.getElementById('volume-level').textContent = val;
             
             const icon = document.getElementById('volume-icon');
             if (val == 0) icon.className = 'fas fa-volume-mute text-hypr-error';
@@ -2134,7 +2218,6 @@ Memory: ${navigator.deviceMemory || '?'} GB`;
             else if (val < 70) icon.className = 'fas fa-volume-down';
             else icon.className = 'fas fa-volume-high';
             
-            // Update all audio elements
             Object.values(audioPlayers).forEach(player => {
                 player.audio.volume = val / 100;
             });
@@ -2227,7 +2310,6 @@ Memory: ${navigator.deviceMemory || '?'} GB`;
             }
         }
 
-        // Notification
         function showNotification(title, message, icon, color) {
             const toast = document.createElement('div');
             toast.className = 'toast hypr-blur rounded-lg p-3 flex items-center gap-3 min-w-[250px] pointer-events-auto';
@@ -2245,15 +2327,18 @@ Memory: ${navigator.deviceMemory || '?'} GB`;
 
         // Global Events
         function setupGlobalEvents() {
+            // Window dragging
             document.addEventListener('mousemove', handleDragMove);
             document.addEventListener('mouseup', handleDragEnd);
             document.addEventListener('touchmove', handleDragMove, { passive: false });
             document.addEventListener('touchend', handleDragEnd);
             
+            // Context menu hide
             document.addEventListener('click', (e) => {
                 if (!e.target.closest('.context-menu')) hideContextMenu();
             });
             
+            // Keyboard shortcuts
             document.addEventListener('keydown', (e) => {
                 if (e.key === 'Escape') {
                     hideContextMenu();
@@ -2283,6 +2368,13 @@ Memory: ${navigator.deviceMemory || '?'} GB`;
                 });
             });
             observer.observe(els.windowsContainer, { childList: true });
+            
+            // Desktop background click to deselect
+            document.getElementById('desktop-area').addEventListener('click', (e) => {
+                if (e.target.id === 'desktop-area' || e.target.id === 'wallpaper') {
+                    document.querySelectorAll('.desktop-icon').forEach(el => el.classList.remove('selected'));
+                }
+            });
         }
 
         // Initialize

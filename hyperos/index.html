@@ -1,0 +1,1537 @@
+<!DOCTYPE html>
+<html lang="en" class="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>HyprOS - Fully Interactive Desktop</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;700&family=Inter:wght@300;400;600;800&display=swap" rel="stylesheet">
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    fontFamily: {
+                        mono: ['JetBrains Mono', 'monospace'],
+                        sans: ['Inter', 'sans-serif'],
+                    },
+                    colors: {
+                        hypr: {
+                            bg: '#0f0f0f',
+                            surface: '#1a1a1a',
+                            surface2: '#252525',
+                            border: '#2a2a2a',
+                            accent: '#cba6f7',
+                            accent2: '#89b4fa',
+                            accent3: '#f38ba8',
+                            text: '#cdd6f4',
+                            muted: '#6c7086',
+                            success: '#a6e3a1',
+                            warning: '#f9e2af',
+                            error: '#f38ba8'
+                        }
+                    },
+                    animation: {
+                        'pulse-fast': 'pulse 1.5s cubic-bezier(0.4, 0, 0.6, 1) infinite',
+                        'slide-in': 'slideIn 0.3s ease-out',
+                        'bounce-subtle': 'bounceSubtle 2s infinite',
+                    },
+                    keyframes: {
+                        slideIn: {
+                            '0%': { transform: 'translateX(100%)', opacity: '0' },
+                            '100%': { transform: 'translateX(0)', opacity: '1' },
+                        },
+                        bounceSubtle: {
+                            '0%, 100%': { transform: 'translateY(0)' },
+                            '50%': { transform: 'translateY(-3px)' },
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        body {
+            background: #0f0f0f;
+            color: #cdd6f4;
+            font-family: 'Inter', sans-serif;
+            overflow: hidden;
+            user-select: none;
+        }
+
+        .hypr-blur {
+            background: rgba(26, 26, 26, 0.85);
+            backdrop-filter: blur(20px) saturate(180%);
+            -webkit-backdrop-filter: blur(20px) saturate(180%);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+        }
+
+        .hypr-card {
+            background: rgba(30, 30, 30, 0.7);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            transition: all 0.2s ease;
+        }
+
+        .hypr-card:hover {
+            background: rgba(40, 40, 40, 0.8);
+            border-color: rgba(203, 166, 247, 0.3);
+            transform: translateY(-2px);
+        }
+
+        .active-glow {
+            box-shadow: 0 0 0 2px #cba6f7, 0 0 30px rgba(203, 166, 247, 0.2);
+        }
+
+        .workspace {
+            transition: all 0.2s ease;
+            position: relative;
+        }
+        .workspace.active {
+            background: #cba6f7;
+            color: #0f0f0f;
+            font-weight: bold;
+        }
+        .workspace.active::after {
+            content: '';
+            position: absolute;
+            bottom: -4px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 4px;
+            height: 4px;
+            background: #cba6f7;
+            border-radius: 50%;
+        }
+        .workspace:hover:not(.active) {
+            background: rgba(203, 166, 247, 0.15);
+        }
+
+        .window-anim {
+            animation: slideUp 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+
+        @keyframes slideUp {
+            from { transform: translateY(30px) scale(0.95); opacity: 0; }
+            to { transform: translateY(0) scale(1); opacity: 1; }
+        }
+
+        .dragging {
+            cursor: grabbing !important;
+            opacity: 0.9;
+        }
+
+        input[type=range] {
+            -webkit-appearance: none;
+            background: transparent;
+        }
+        input[type=range]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            height: 14px;
+            width: 14px;
+            border-radius: 50%;
+            background: #cba6f7;
+            cursor: pointer;
+            margin-top: -5px;
+            box-shadow: 0 0 10px rgba(203, 166, 247, 0.5);
+        }
+        input[type=range]::-webkit-slider-runnable-track {
+            width: 100%;
+            height: 4px;
+            cursor: pointer;
+            background: #3a3a3a;
+            border-radius: 2px;
+        }
+
+        ::-webkit-scrollbar {
+            width: 6px;
+            height: 6px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #1a1a1a;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #3a3a3a;
+            border-radius: 3px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #cba6f7;
+        }
+
+        .toast {
+            animation: slideIn 0.3s ease-out;
+        }
+
+        .cursor-blink {
+            animation: blink 1s step-end infinite;
+        }
+        @keyframes blink {
+            50% { opacity: 0; }
+        }
+
+        .chart-bar {
+            transition: height 0.3s ease;
+        }
+
+        iframe {
+            border: none;
+            width: 100%;
+            height: 100%;
+            background: white;
+        }
+
+        .audio-visualizer {
+            display: flex;
+            align-items: end;
+            gap: 2px;
+            height: 30px;
+        }
+        .audio-bar {
+            width: 4px;
+            background: #cba6f7;
+            border-radius: 2px;
+            transition: height 0.05s ease;
+        }
+    </style>
+<base target="_blank">
+</head>
+<body class="h-screen w-screen relative bg-hypr-bg">
+
+    <!-- Wallpaper -->
+    <div id="wallpaper" class="absolute inset-0 z-0 bg-cover bg-center transition-all duration-700" 
+         style="background-image: url('https://images.unsplash.com/photo-1550684848-fac1c5b4e853?q=80&w=2070&auto=format&fit=crop');">
+        <div class="absolute inset-0 bg-black/30" id="wallpaper-dim"></div>
+    </div>
+
+    <!-- Notification Container -->
+    <div id="notifications" class="absolute top-20 right-4 z-50 flex flex-col gap-2 pointer-events-none"></div>
+
+    <!-- Main Layout -->
+    <div class="relative z-10 h-full flex flex-col p-2 gap-2">
+
+        <!-- TOP BAR -->
+        <header class="hypr-blur rounded-xl px-4 py-2 flex items-center justify-between text-sm font-mono">
+            <div class="flex items-center gap-1" id="workspaces">
+                <button class="workspace active w-8 h-8 rounded-lg flex items-center justify-center text-xs" data-ws="1" onclick="switchWorkspace(1)">1</button>
+                <button class="workspace w-8 h-8 rounded-lg flex items-center justify-center text-xs text-hypr-muted" data-ws="2" onclick="switchWorkspace(2)">2</button>
+                <button class="workspace w-8 h-8 rounded-lg flex items-center justify-center text-xs text-hypr-muted" data-ws="3" onclick="switchWorkspace(3)">3</button>
+                <button class="workspace w-8 h-8 rounded-lg flex items-center justify-center text-xs text-hypr-muted" data-ws="4" onclick="switchWorkspace(4)">4</button>
+                <button class="workspace w-8 h-8 rounded-lg flex items-center justify-center text-xs text-hypr-muted" data-ws="5" onclick="switchWorkspace(5)">5</button>
+                <div class="w-px h-4 bg-white/10 mx-2"></div>
+                <span id="active-window-indicator" class="text-hypr-accent text-xs opacity-0 transition-opacity">
+                    <i class="fas fa-terminal mr-1"></i><span id="window-title-text">kitty</span>
+                </span>
+            </div>
+
+            <div class="absolute left-1/2 transform -translate-x-1/2 flex flex-col items-center cursor-pointer hover:scale-105 transition-transform" onclick="toggleCalendar()">
+                <div id="clock-time" class="text-xl font-bold tracking-wider">09:41</div>
+                <div id="clock-date" class="text-xs text-hypr-muted uppercase tracking-widest">Mon 10 Feb</div>
+            </div>
+
+            <div class="flex items-center gap-3 text-hypr-muted">
+                <button onclick="toggleNetwork()" class="hover:text-hypr-text transition-colors p-1 rounded hover:bg-white/5" title="Network">
+                    <i class="fas fa-wifi" id="wifi-icon"></i>
+                </button>
+                <button onclick="toggleBluetooth()" class="hover:text-hypr-accent transition-colors p-1 rounded hover:bg-white/5" title="Bluetooth">
+                    <i class="fab fa-bluetooth-b" id="bt-icon"></i>
+                </button>
+                <button onclick="toggleDoNotDisturb()" class="hover:text-hypr-warning transition-colors p-1 rounded hover:bg-white/5" title="Do Not Disturb">
+                    <i class="fas fa-bell" id="dnd-icon"></i>
+                </button>
+                <div class="flex items-center gap-1 hover:text-hypr-text cursor-pointer p-1 rounded hover:bg-white/5" onclick="toggleBattery()">
+                    <i class="fas fa-battery-three-quarters text-hypr-success" id="battery-icon"></i>
+                    <span class="text-xs" id="battery-text">84%</span>
+                </div>
+                <div class="flex items-center gap-1 hover:text-hypr-text cursor-pointer p-1 rounded hover:bg-white/5" onclick="toggleVolume()">
+                    <i class="fas fa-volume-high" id="volume-icon"></i>
+                </div>
+                <div class="w-px h-4 bg-white/10"></div>
+                <button onclick="toggleSettings()" class="hover:text-hypr-accent transition-colors p-1 rounded hover:bg-white/5 animate-spin-slow" style="animation-duration: 10s;">
+                    <i class="fas fa-cog"></i>
+                </button>
+                <button onclick="showPowerMenu()" class="hover:text-hypr-error transition-colors p-1 rounded hover:bg-white/5">
+                    <i class="fas fa-power-off"></i>
+                </button>
+            </div>
+        </header>
+
+        <!-- CENTER: Desktop Area -->
+        <main class="flex-grow relative overflow-hidden" id="desktop-area">
+            
+            <!-- Desktop Icons -->
+            <div class="absolute top-4 left-4 flex flex-col gap-4">
+                <div class="hypr-card rounded-xl p-3 w-20 flex flex-col items-center gap-2 cursor-pointer hover:scale-105 transition-transform" onclick="openApp('files')">
+                    <i class="fas fa-folder text-3xl text-yellow-400"></i>
+                    <span class="text-xs text-center">Home</span>
+                </div>
+                <div class="hypr-card rounded-xl p-3 w-20 flex flex-col items-center gap-2 cursor-pointer hover:scale-105 transition-transform" onclick="openApp('trash')">
+                    <i class="fas fa-trash text-3xl text-gray-400"></i>
+                    <span class="text-xs text-center">Trash</span>
+                </div>
+                <div class="hypr-card rounded-xl p-3 w-20 flex flex-col items-center gap-2 cursor-pointer hover:scale-105 transition-transform" onclick="openApp('docs')">
+                    <i class="fas fa-file-alt text-3xl text-blue-400"></i>
+                    <span class="text-xs text-center">Docs</span>
+                </div>
+            </div>
+
+            <!-- Launcher -->
+            <div id="launcher" class="absolute inset-0 flex items-center justify-center z-20 bg-black/20 backdrop-blur-sm" style="display: none;">
+                <div class="hypr-blur rounded-2xl w-full max-w-2xl window-anim overflow-hidden">
+                    <div class="p-4 border-b border-white/10">
+                        <div class="relative">
+                            <i class="fas fa-search absolute left-4 top-1/2 transform -translate-y-1/2 text-hypr-muted"></i>
+                            <input type="text" id="launcher-search" 
+                                   class="w-full bg-transparent border-none text-xl focus:ring-0 outline-none pl-12 pr-4 py-2 text-hypr-text placeholder-hypr-muted"
+                                   placeholder="Type to search..." autocomplete="off" oninput="filterApps(this.value)">
+                            <span class="absolute right-4 top-1/2 transform -translate-y-1/2 text-xs text-hypr-muted bg-white/5 px-2 py-1 rounded">ESC to close</span>
+                        </div>
+                    </div>
+
+                    <div class="p-4 max-h-96 overflow-y-auto">
+                        <div class="grid grid-cols-5 gap-3" id="apps-grid"></div>
+                        <div class="mt-4 pt-4 border-t border-white/10">
+                            <div class="text-xs text-hypr-muted mb-2">Recent</div>
+                            <div class="space-y-1" id="recent-files"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Active Windows Container -->
+            <div id="windows-container" class="absolute inset-0 pointer-events-none"></div>
+
+        </main>
+
+        <!-- BOTTOM: Dock -->
+        <footer class="flex justify-center pb-2">
+            <div class="hypr-blur rounded-2xl px-4 py-2 flex items-center gap-2">
+                <button onclick="toggleLauncher()" class="p-2 rounded-xl hover:bg-white/10 transition-all hover:scale-110 group" title="Launcher (Super)">
+                    <i class="fas fa-th text-xl text-hypr-accent group-hover:rotate-12 transition-transform"></i>
+                </button>
+                <div class="w-px h-6 bg-white/10 mx-1"></div>
+                <button onclick="openApp('files')" class="p-2 rounded-xl hover:bg-white/10 transition-all hover:scale-110 hover:-translate-y-1" title="Files">
+                    <i class="fas fa-folder text-2xl text-yellow-400"></i>
+                </button>
+                <button onclick="openApp('browser')" class="p-2 rounded-xl hover:bg-white/10 transition-all hover:scale-110 hover:-translate-y-1" title="Browser">
+                    <i class="fab fa-firefox text-2xl text-orange-500"></i>
+                </button>
+                <button onclick="openApp('terminal')" class="p-2 rounded-xl hover:bg-white/10 transition-all hover:scale-110 hover:-translate-y-1" title="Terminal">
+                    <i class="fas fa-terminal text-2xl text-green-400"></i>
+                </button>
+                <button onclick="openApp('code')" class="p-2 rounded-xl hover:bg-white/10 transition-all hover:scale-110 hover:-translate-y-1" title="Editor">
+                    <i class="fas fa-code text-2xl text-blue-400"></i>
+                </button>
+                <button onclick="openApp('music')" class="p-2 rounded-xl hover:bg-white/10 transition-all hover:scale-110 hover:-translate-y-1" title="Music">
+                    <i class="fas fa-music text-2xl text-pink-400"></i>
+                </button>
+                <div class="w-px h-6 bg-white/10 mx-1"></div>
+                <button onclick="toggleSettings()" class="p-2 rounded-xl hover:bg-white/10 transition-all hover:scale-110 hover:rotate-90" title="Settings">
+                    <i class="fas fa-cog text-xl text-hypr-muted"></i>
+                </button>
+            </div>
+        </footer>
+    </div>
+
+    <!-- SETTINGS WINDOW -->
+    <div id="settings-window" class="hidden absolute top-16 right-4 w-80 hypr-blur rounded-xl shadow-2xl z-50 window-anim flex flex-col max-h-[85vh]">
+        <div class="h-12 border-b border-white/10 flex items-center justify-between px-4 cursor-grab bg-white/5" id="settings-header">
+            <span class="font-bold text-sm flex items-center gap-2">
+                <i class="fas fa-sliders-h text-hypr-accent"></i> Settings
+            </span>
+            <button onclick="toggleSettings()" class="text-hypr-muted hover:text-white transition-colors w-8 h-8 flex items-center justify-center rounded-lg hover:bg-white/10">
+                <i class="fas fa-times"></i>
+            </button>
+        </div>
+
+        <div class="p-4 overflow-y-auto space-y-4 text-sm">
+            <section class="space-y-3">
+                <h3 class="text-xs font-bold text-hypr-muted uppercase tracking-wider">Wallpaper</h3>
+                <div class="flex gap-2">
+                    <input type="text" id="wallpaper-input" class="flex-1 bg-hypr-surface border border-hypr-border rounded-lg px-3 py-2 text-xs focus:border-hypr-accent outline-none" placeholder="Image URL...">
+                    <button onclick="applyWallpaper()" class="bg-hypr-accent text-hypr-bg px-3 py-2 rounded-lg text-xs font-bold hover:opacity-90">
+                        <i class="fas fa-check"></i>
+                    </button>
+                </div>
+                <div class="border-2 border-dashed border-hypr-border rounded-lg p-3 text-center hover:border-hypr-accent transition-colors cursor-pointer relative">
+                    <input type="file" id="wallpaper-file" accept="image/*" class="absolute inset-0 w-full h-full opacity-0 cursor-pointer" onchange="handleFileUpload(this)">
+                    <i class="fas fa-cloud-upload-alt text-hypr-muted"></i>
+                    <p class="text-xs text-hypr-muted mt-1">Upload image</p>
+                </div>
+                <div class="grid grid-cols-3 gap-2">
+                    <button onclick="setPresetWallpaper('https://images.unsplash.com/photo-1550684848-fac1c5b4e853?q=80&w=2070')" class="h-12 rounded-lg bg-cover bg-center border border-white/10 hover:border-hypr-accent" style="background-image: url('https://images.unsplash.com/photo-1550684848-fac1c5b4e853?q=80&w=200')"></button>
+                    <button onclick="setPresetWallpaper('https://images.unsplash.com/photo-1579546929518-9e396f3cc809?q=80&w=2070')" class="h-12 rounded-lg bg-cover bg-center border border-white/10 hover:border-hypr-accent" style="background-image: url('https://images.unsplash.com/photo-1579546929518-9e396f3cc809?q=80&w=200')"></button>
+                    <button onclick="setPresetWallpaper('https://images.unsplash.com/photo-1519681393784-d120267933ba?q=80&w=2070')" class="h-12 rounded-lg bg-cover bg-center border border-white/10 hover:border-hypr-accent" style="background-image: url('https://images.unsplash.com/photo-1519681393784-d120267933ba?q=80&w=200')"></button>
+                </div>
+            </section>
+
+            <section class="space-y-3">
+                <h3 class="text-xs font-bold text-hypr-muted uppercase tracking-wider">Appearance</h3>
+                <div class="flex items-center justify-between p-2 bg-hypr-surface/50 rounded-lg">
+                    <span>Dim Wallpaper</span>
+                    <input type="range" min="0" max="80" value="30" class="w-24" oninput="updateDim(this.value)">
+                </div>
+                <div class="flex items-center justify-between p-2 bg-hypr-surface/50 rounded-lg">
+                    <span>Border Glow</span>
+                    <button onclick="toggleGlow()" id="glow-toggle-btn" class="w-10 h-5 rounded-full bg-hypr-accent relative transition-colors">
+                        <div class="w-3 h-3 bg-white rounded-full absolute top-1 right-1 transition-all"></div>
+                    </button>
+                </div>
+            </section>
+
+            <section class="space-y-3">
+                <h3 class="text-xs font-bold text-hypr-muted uppercase tracking-wider">System</h3>
+                <div class="space-y-2">
+                    <div class="flex items-center justify-between p-2 bg-hypr-surface/50 rounded-lg">
+                        <div class="flex items-center gap-2">
+                            <i class="fas fa-volume-up text-hypr-accent"></i>
+                            <span>Volume</span>
+                        </div>
+                        <span id="volume-display" class="text-xs text-hypr-muted">75%</span>
+                    </div>
+                    <input type="range" min="0" max="100" value="75" class="w-full" oninput="updateVolume(this.value)">
+                </div>
+                <div class="space-y-2">
+                    <div class="flex items-center justify-between p-2 bg-hypr-surface/50 rounded-lg">
+                        <div class="flex items-center gap-2">
+                            <i class="fas fa-sun text-yellow-400"></i>
+                            <span>Brightness</span>
+                        </div>
+                        <span id="brightness-display" class="text-xs text-hypr-muted">80%</span>
+                    </div>
+                    <input type="range" min="10" max="100" value="80" class="w-full" oninput="updateBrightness(this.value)">
+                </div>
+            </section>
+
+            <button onclick="resetAll()" class="w-full py-2 border border-hypr-error/30 text-hypr-error rounded-lg text-xs hover:bg-hypr-error/10 transition-colors">
+                <i class="fas fa-trash-alt mr-2"></i> Reset System
+            </button>
+        </div>
+    </div>
+
+    <!-- CALENDAR POPUP -->
+    <div id="calendar-popup" class="hidden absolute top-16 left-1/2 transform -translate-x-1/2 hypr-blur rounded-xl p-4 z-40 w-80 window-anim">
+        <div class="flex justify-between items-center mb-4">
+            <span class="font-bold" id="cal-month">February 2025</span>
+            <div class="flex gap-2">
+                <button onclick="changeMonth(-1)" class="w-6 h-6 rounded hover:bg-white/10 flex items-center justify-center"><i class="fas fa-chevron-left text-xs"></i></button>
+                <button onclick="changeMonth(1)" class="w-6 h-6 rounded hover:bg-white/10 flex items-center justify-center"><i class="fas fa-chevron-right text-xs"></i></button>
+            </div>
+        </div>
+        <div class="grid grid-cols-7 gap-1 text-center text-xs mb-2 text-hypr-muted">
+            <div>Su</div><div>Mo</div><div>Tu</div><div>We</div><div>Th</div><div>Fr</div><div>Sa</div>
+        </div>
+        <div class="grid grid-cols-7 gap-1 text-center text-sm" id="calendar-days"></div>
+    </div>
+
+    <!-- VOLUME OSD -->
+    <div id="volume-osd" class="hidden absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 hypr-blur rounded-2xl p-6 z-50 flex flex-col items-center gap-4 window-anim">
+        <i class="fas fa-volume-up text-4xl text-hypr-accent"></i>
+        <div class="w-48 h-2 bg-hypr-surface rounded-full overflow-hidden">
+            <div id="volume-bar" class="h-full bg-hypr-accent transition-all duration-200" style="width: 75%"></div>
+        </div>
+        <span id="volume-text" class="text-2xl font-bold">75%</span>
+    </div>
+
+    <!-- POWER MENU -->
+    <div id="power-menu" class="hidden absolute inset-0 z-50 bg-black/60 backdrop-blur-md flex items-center justify-center">
+        <div class="hypr-blur rounded-2xl p-8 flex gap-6 window-anim">
+            <button onclick="sleepSystem()" class="flex flex-col items-center gap-3 p-6 rounded-xl hover:bg-white/10 transition-all hover:scale-110 group">
+                <i class="fas fa-moon text-3xl text-hypr-accent2 group-hover:animate-bounce"></i>
+                <span class="text-sm">Sleep</span>
+            </button>
+            <button onclick="restartSystem()" class="flex flex-col items-center gap-3 p-6 rounded-xl hover:bg-white/10 transition-all hover:scale-110 group">
+                <i class="fas fa-redo text-3xl text-hypr-warning group-hover:animate-spin"></i>
+                <span class="text-sm">Restart</span>
+            </button>
+            <button onclick="shutdownSystem()" class="flex flex-col items-center gap-3 p-6 rounded-xl hover:bg-white/10 transition-all hover:scale-110 group">
+                <i class="fas fa-power-off text-3xl text-hypr-error group-hover:animate-pulse"></i>
+                <span class="text-sm">Shut Down</span>
+            </button>
+            <button onclick="hidePowerMenu()" class="flex flex-col items-center gap-3 p-6 rounded-xl hover:bg-white/10 transition-all hover:scale-110">
+                <i class="fas fa-times text-3xl text-hypr-muted"></i>
+                <span class="text-sm">Cancel</span>
+            </button>
+        </div>
+    </div>
+
+    <script>
+        let state = {
+            wallpaper: 'https://images.unsplash.com/photo-1550684848-fac1c5b4e853?q=80&w=2070&auto=format&fit=crop',
+            volume: 75,
+            brightness: 80,
+            glow: true,
+            wifi: true,
+            bluetooth: false,
+            dnd: false,
+            activeWorkspace: 1,
+            windows: [],
+            calendarDate: new Date(),
+            musicFiles: [],
+            currentTrack: null,
+            isPlaying: false,
+            audioContext: null,
+            analyser: null,
+            dataArray: null,
+            source: null
+        };
+
+        const apps = [
+            { id: 'terminal', name: 'Terminal', icon: 'fa-terminal', color: 'text-green-400' },
+            { id: 'files', name: 'Files', icon: 'fa-folder', color: 'text-yellow-400' },
+            { id: 'browser', name: 'Firefox', icon: 'fa-firefox', color: 'text-orange-500' },
+            { id: 'code', name: 'VS Code', icon: 'fa-code', color: 'text-blue-400' },
+            { id: 'music', name: 'Music', icon: 'fa-music', color: 'text-pink-400' },
+            { id: 'settings', name: 'Settings', icon: 'fa-cog', color: 'text-hypr-accent' },
+            { id: 'calc', name: 'Calculator', icon: 'fa-calculator', color: 'text-hypr-accent2' },
+        ];
+
+        const recentFiles = [
+            { name: 'project.py', icon: 'fa-file-code', color: 'text-blue-400', path: '~/dev' },
+            { name: 'notes.md', icon: 'fa-file-alt', color: 'text-white', path: '~/docs' },
+            { name: 'screenshot.png', icon: 'fa-image', color: 'text-green-400', path: '~/pics' },
+        ];
+
+        const els = {
+            wallpaper: document.getElementById('wallpaper'),
+            wallpaperDim: document.getElementById('wallpaper-dim'),
+            launcher: document.getElementById('launcher'),
+            launcherSearch: document.getElementById('launcher-search'),
+            appsGrid: document.getElementById('apps-grid'),
+            recentFiles: document.getElementById('recent-files'),
+            windowsContainer: document.getElementById('windows-container'),
+            settingsWindow: document.getElementById('settings-window'),
+            settingsHeader: document.getElementById('settings-header'),
+            notifications: document.getElementById('notifications'),
+            activeWindowIndicator: document.getElementById('active-window-indicator'),
+            windowTitleText: document.getElementById('window-title-text'),
+            calendarPopup: document.getElementById('calendar-popup'),
+            volumeOsd: document.getElementById('volume-osd'),
+            volumeBar: document.getElementById('volume-bar'),
+            volumeText: document.getElementById('volume-text'),
+            powerMenu: document.getElementById('power-menu'),
+        };
+
+        function updateClock() {
+            const now = new Date();
+            document.getElementById('clock-time').textContent = now.toLocaleTimeString('en-US', { hour12: false, hour: '2-digit', minute: '2-digit' });
+            document.getElementById('clock-date').textContent = now.toLocaleDateString('en-US', { weekday: 'short', day: 'numeric', month: 'short' });
+        }
+        setInterval(updateClock, 1000);
+        updateClock();
+
+        function showNotification(title, message, icon = 'fa-info-circle', color = 'text-hypr-accent') {
+            const toast = document.createElement('div');
+            toast.className = 'toast hypr-blur rounded-lg p-3 flex items-center gap-3 min-w-[250px] pointer-events-auto cursor-pointer hover:bg-white/5';
+            toast.innerHTML = `
+                <i class="fas ${icon} ${color} text-lg"></i>
+                <div class="flex-1">
+                    <div class="text-sm font-bold">${title}</div>
+                    <div class="text-xs text-hypr-muted">${message}</div>
+                </div>
+                <button onclick="this.parentElement.remove()" class="text-hypr-muted hover:text-white"><i class="fas fa-times"></i></button>
+            `;
+            toast.onclick = () => toast.remove();
+            els.notifications.appendChild(toast);
+            setTimeout(() => { if (toast.parentElement) toast.remove(); }, 5000);
+        }
+
+        function toggleLauncher() {
+            const isHidden = els.launcher.style.display === 'none';
+            if (isHidden) {
+                els.launcher.style.display = 'flex';
+                els.launcherSearch.value = '';
+                els.launcherSearch.focus();
+                renderApps();
+                renderRecent();
+            } else {
+                els.launcher.style.display = 'none';
+            }
+        }
+
+        function renderApps(filter = '') {
+            const filtered = apps.filter(app => app.name.toLowerCase().includes(filter.toLowerCase()));
+            els.appsGrid.innerHTML = filtered.map(app => `
+                <button onclick="openApp('${app.id}'); toggleLauncher()" 
+                        class="hypr-card rounded-xl p-3 flex flex-col items-center gap-2 hover:scale-105 transition-transform group">
+                    <div class="w-12 h-12 rounded-lg bg-hypr-surface flex items-center justify-center ${app.color} group-hover:brightness-125">
+                        <i class="fas ${app.icon} text-xl"></i>
+                    </div>
+                    <span class="text-xs text-center text-hypr-muted group-hover:text-hypr-text">${app.name}</span>
+                </button>
+            `).join('');
+        }
+
+        function renderRecent() {
+            els.recentFiles.innerHTML = recentFiles.map(file => `
+                <div class="flex items-center gap-3 p-2 rounded-lg hover:bg-white/5 cursor-pointer transition-colors group" onclick="showNotification('Opening', '${file.name}')">
+                    <i class="fas ${file.icon} ${file.color} w-5"></i>
+                    <div class="flex-1">
+                        <div class="text-sm">${file.name}</div>
+                        <div class="text-xs text-hypr-muted">${file.path}</div>
+                    </div>
+                    <i class="fas fa-chevron-right text-xs text-hypr-muted opacity-0 group-hover:opacity-100"></i>
+                </div>
+            `).join('');
+        }
+
+        function filterApps(query) {
+            renderApps(query);
+        }
+
+        function getRandomPosition() {
+            const containerWidth = window.innerWidth;
+            const containerHeight = window.innerHeight - 100;
+            const windowWidth = 700;
+            const windowHeight = 500;
+            
+            const maxX = containerWidth - windowWidth - 100;
+            const maxY = containerHeight - windowHeight - 100;
+            
+            const x = Math.max(50, Math.random() * maxX);
+            const y = Math.max(100, Math.random() * maxY);
+            
+            return { x, y };
+        }
+
+        function openApp(appId) {
+            const app = apps.find(a => a.id === appId) || { name: appId, icon: 'fa-window-maximize', color: 'text-hypr-text' };
+            const windowId = 'win-' + Date.now();
+            const pos = getRandomPosition();
+            
+            const windowEl = document.createElement('div');
+            windowEl.id = windowId;
+            windowEl.className = 'absolute hypr-blur rounded-xl flex flex-col shadow-2xl window-anim pointer-events-auto';
+            windowEl.style.width = '700px';
+            windowEl.style.height = '500px';
+            windowEl.style.left = pos.x + 'px';
+            windowEl.style.top = pos.y + 'px';
+            if (state.glow) windowEl.classList.add('active-glow');
+
+            let content = '';
+            switch(appId) {
+                case 'terminal':
+                    content = `
+                        <div class="p-4 font-mono text-sm h-full overflow-auto bg-hypr-bg/50" id="term-${windowId}">
+                            <div class="text-green-400 mb-2">user@hypr-os ~ $ neofetch</div>
+                            <div class="text-hypr-text mb-4 font-mono text-xs leading-relaxed opacity-80">
+                                <span class="text-hypr-accent">  OS:</span> HyprOS Web Edition<br>
+                                <span class="text-hypr-accent">  Host:</span> Browser Engine<br>
+                                <span class="text-hypr-accent">  Kernel:</span> JavaScript V8<br>
+                                <span class="text-hypr-accent">  Shell:</span> zsh 5.9<br>
+                                <span class="text-hypr-accent">  WM:</span> Hyprland (Simulated)<br>
+                                <span class="text-hypr-accent">  Theme:</span> Catppuccin Mauve<br>
+                            </div>
+                            <div class="text-green-400 flex items-center gap-2">
+                                user@hypr-os ~ $ 
+                                <input type="text" class="bg-transparent border-none outline-none text-hypr-text flex-1 font-mono" 
+                                       onkeydown="handleTerminal(event, '${windowId}')" 
+                                       placeholder="type 'help' for commands" autocomplete="off">
+                            </div>
+                        </div>`;
+                    break;
+                case 'browser':
+                    content = `
+                        <div class="flex flex-col h-full">
+                            <div class="flex items-center gap-2 p-2 border-b border-white/10 bg-hypr-surface/30">
+                                <div class="flex gap-1">
+                                    <button onclick="browserBack('${windowId}')" class="w-6 h-6 rounded hover:bg-white/10 flex items-center justify-center text-xs"><i class="fas fa-arrow-left"></i></button>
+                                    <button onclick="browserForward('${windowId}')" class="w-6 h-6 rounded hover:bg-white/10 flex items-center justify-center text-xs"><i class="fas fa-arrow-right"></i></button>
+                                    <button onclick="browserReload('${windowId}')" class="w-6 h-6 rounded hover:bg-white/10 flex items-center justify-center text-xs"><i class="fas fa-rotate-right"></i></button>
+                                </div>
+                                <div class="flex-1 bg-hypr-bg rounded-lg px-3 py-1 text-xs flex items-center gap-2">
+                                    <i class="fas fa-lock text-hypr-success text-xs"></i>
+                                    <input type="text" id="url-${windowId}" class="bg-transparent border-none outline-none text-hypr-text flex-1" 
+                                           value="https://example.com" onkeydown="if(event.key==='Enter')navigateBrowser('${windowId}')">
+                                </div>
+                                <button onclick="navigateBrowser('${windowId}')" class="w-6 h-6 rounded hover:bg-white/10 flex items-center justify-center text-xs">
+                                    <i class="fas fa-arrow-right"></i>
+                                </button>
+                            </div>
+                            <iframe id="iframe-${windowId}" src="https://example.com" class="flex-1 bg-white"></iframe>
+                        </div>`;
+                    break;
+                case 'music':
+                    content = `
+                        <div class="flex h-full">
+                            <div class="w-64 border-r border-white/10 p-4 space-y-4 overflow-auto">
+                                <div class="border-2 border-dashed border-hypr-border rounded-lg p-4 text-center hover:border-hypr-accent transition-colors cursor-pointer relative">
+                                    <input type="file" id="music-upload-${windowId}" accept="audio/mp3,audio/wav,audio/ogg" multiple 
+                                           class="absolute inset-0 w-full h-full opacity-0 cursor-pointer" onchange="handleMusicUpload(this, '${windowId}')">
+                                    <i class="fas fa-plus text-hypr-accent text-2xl mb-2"></i>
+                                    <p class="text-xs text-hypr-muted">Add MP3 files</p>
+                                </div>
+                                <div class="text-xs font-bold text-hypr-muted uppercase tracking-wider">Library</div>
+                                <div class="space-y-1" id="playlist-${windowId}">
+                                    <div class="text-xs text-hypr-muted p-2">No tracks loaded</div>
+                                </div>
+                            </div>
+                            <div class="flex-1 flex flex-col p-6">
+                                <div class="flex-1 flex items-center justify-center">
+                                    <div class="text-center">
+                                        <div class="w-48 h-48 rounded-2xl bg-gradient-to-br from-hypr-accent to-hypr-accent2 flex items-center justify-center mb-6 shadow-2xl" id="album-art-${windowId}">
+                                            <i class="fas fa-music text-6xl text-white"></i>
+                                        </div>
+                                        <h2 class="text-2xl font-bold mb-1" id="track-title-${windowId}">No track selected</h2>
+                                        <p class="text-hypr-muted" id="track-artist-${windowId}">Upload MP3 files to play</p>
+                                    </div>
+                                </div>
+                                <div class="space-y-4">
+                                    <div class="audio-visualizer justify-center" id="visualizer-${windowId}">
+                                        ${Array(20).fill(0).map(() => `<div class="audio-bar" style="height: 4px"></div>`).join('')}
+                                    </div>
+                                    <div class="flex items-center justify-center gap-6">
+                                        <button onclick="prevTrack('${windowId}')" class="text-hypr-muted hover:text-hypr-text transition-colors"><i class="fas fa-step-backward text-xl"></i></button>
+                                        <button onclick="toggleMusic('${windowId}')" id="play-btn-${windowId}" class="w-14 h-14 rounded-full bg-hypr-accent text-hypr-bg flex items-center justify-center hover:scale-110 transition-transform">
+                                            <i class="fas fa-play text-xl ml-1"></i>
+                                        </button>
+                                        <button onclick="nextTrack('${windowId}')" class="text-hypr-muted hover:text-hypr-text transition-colors"><i class="fas fa-step-forward text-xl"></i></button>
+                                    </div>
+                                    <div class="flex items-center gap-3">
+                                        <span class="text-xs text-hypr-muted w-10 text-right" id="current-time-${windowId}">0:00</span>
+                                        <div class="flex-1 h-1 bg-white/10 rounded-full overflow-hidden cursor-pointer" onclick="seekMusic(event, '${windowId}')">
+                                            <div id="progress-${windowId}" class="h-full bg-hypr-accent w-0 transition-all duration-100"></div>
+                                        </div>
+                                        <span class="text-xs text-hypr-muted w-10" id="duration-${windowId}">0:00</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <audio id="audio-${windowId}" crossorigin="anonymous"></audio>`;
+                    break;
+                case 'files':
+                    content = `
+                        <div class="p-4 h-full overflow-auto">
+                            <div class="flex items-center gap-2 mb-4 text-xs text-hypr-muted">
+                                <span>Home</span><i class="fas fa-chevron-right text-xs"></i><span>Documents</span>
+                            </div>
+                            <div class="grid grid-cols-4 gap-3">
+                                ${['Projects', 'Pictures', 'Downloads', 'Music', 'Videos', 'Documents', 'Config', 'Trash'].map((folder, i) => `
+                                    <div class="hypr-card rounded-lg p-3 flex flex-col items-center gap-2 cursor-pointer hover:bg-hypr-surface" onclick="showNotification('Opened', '${folder}')">
+                                        <i class="fas fa-folder text-3xl ${['text-yellow-400', 'text-blue-400', 'text-green-400', 'text-pink-400'][i % 4]}"></i>
+                                        <span class="text-xs">${folder}</span>
+                                    </div>
+                                `).join('')}
+                            </div>
+                        </div>`;
+                    break;
+                case 'calc':
+                    content = `
+                        <div class="p-4 h-full flex flex-col">
+                            <div class="flex-1 flex items-end justify-end p-4 text-4xl font-mono text-hypr-text mb-4 bg-hypr-surface/30 rounded-lg" id="calc-display-${windowId}">0</div>
+                            <div class="grid grid-cols-4 gap-2">
+                                ${['C', '±', '%', '÷', '7', '8', '9', '×', '4', '5', '6', '-', '1', '2', '3', '+', '0', '.', '='].map(btn => {
+                                    const isOp = ['÷', '×', '-', '+', '='].includes(btn);
+                                    const isFn = ['C', '±', '%'].includes(btn);
+                                    const span = btn === '0' ? 'col-span-2' : '';
+                                    const color = isOp ? 'bg-hypr-accent text-hypr-bg' : isFn ? 'bg-hypr-surface text-hypr-text' : 'bg-hypr-surface/50 text-hypr-text';
+                                    return `<button onclick="calcInput('${btn}', '${windowId}')" class="${span} ${color} h-12 rounded-lg font-bold hover:brightness-110 transition-all text-lg">${btn}</button>`;
+                                }).join('')}
+                            </div>
+                        </div>`;
+                    break;
+                case 'code':
+                    content = `
+                        <div class="flex h-full text-sm font-mono">
+                            <div class="w-48 border-r border-white/10 p-2 space-y-1 overflow-auto">
+                                <div class="flex items-center gap-2 p-2 rounded bg-hypr-accent/20 text-hypr-accent cursor-pointer">
+                                    <i class="fas fa-file-code"></i> main.py
+                                </div>
+                                <div class="flex items-center gap-2 p-2 rounded hover:bg-white/5 text-hypr-muted cursor-pointer">
+                                    <i class="fas fa-file-code"></i> utils.py
+                                </div>
+                            </div>
+                            <div class="flex-1 p-4 overflow-auto bg-hypr-bg/30">
+                                <div class="text-hypr-muted mb-2">main.py</div>
+                                <pre class="text-hypr-text leading-relaxed"><code><span class="text-hypr-accent">import</span> <span class="text-hypr-accent2">numpy</span> <span class="text-hypr-accent">as</span> <span class="text-hypr-accent2">np</span>
+
+<span class="text-hypr-accent">@dataclass</span>
+<span class="text-hypr-accent">class</span> <span class="text-yellow-400">HyprConfig</span>:
+    gaps: <span class="text-hypr-accent3">int</span> = <span class="text-green-400">10</span></code></pre>
+                            </div>
+                        </div>`;
+                    break;
+                default:
+                    content = `<div class="p-8 text-center"><i class="fas fa-cube text-6xl text-hypr-muted mb-4"></i><p>Application "${app.name}" is running</p></div>`;
+            }
+
+            windowEl.innerHTML = `
+                <div class="h-10 border-b border-white/10 flex items-center justify-between px-3 cursor-grab bg-white/5 rounded-t-xl" onmousedown="startDrag(event, '${windowId}')">
+                    <div class="flex items-center gap-2">
+                        <i class="fas ${app.icon} ${app.color} text-xs"></i>
+                        <span class="text-xs font-mono text-hypr-muted">${app.name}</span>
+                    </div>
+                    <div class="flex items-center gap-2">
+                        <button onclick="minimizeWindow('${windowId}')" class="w-3 h-3 rounded-full bg-yellow-500/80 hover:bg-yellow-400 transition-colors"></button>
+                        <button onclick="maximizeWindow('${windowId}')" class="w-3 h-3 rounded-full bg-green-500/80 hover:bg-green-400 transition-colors"></button>
+                        <button onclick="closeWindow('${windowId}')" class="w-3 h-3 rounded-full bg-red-500/80 hover:bg-red-400 transition-colors"></button>
+                    </div>
+                </div>
+                <div class="flex-1 overflow-hidden rounded-b-xl relative">
+                    ${content}
+                </div>
+            `;
+
+            els.windowsContainer.appendChild(windowEl);
+            state.windows.push({ id: windowId, element: windowEl, app: app, musicState: { currentTrack: 0, audio: null, analyser: null } });
+            
+            els.activeWindowIndicator.classList.remove('opacity-0');
+            els.windowTitleText.textContent = app.name;
+            focusWindow(windowId);
+            
+            showNotification('Launched', `${app.name} is now running`, app.icon, app.color.replace('text-', 'text-'));
+        }
+
+        // Browser Functions
+        function navigateBrowser(windowId) {
+            const urlInput = document.getElementById(`url-${windowId}`);
+            const iframe = document.getElementById(`iframe-${windowId}`);
+            let url = urlInput.value;
+            
+            if (!url.startsWith('http')) {
+                url = 'https://' + url;
+            }
+            
+            iframe.src = url;
+            urlInput.value = url;
+        }
+
+        function browserBack(windowId) {
+            const iframe = document.getElementById(`iframe-${windowId}`);
+            try {
+                iframe.contentWindow.history.back();
+            } catch(e) {
+                showNotification('Browser', 'Cannot go back', 'fa-exclamation', 'text-hypr-error');
+            }
+        }
+
+        function browserForward(windowId) {
+            const iframe = document.getElementById(`iframe-${windowId}`);
+            try {
+                iframe.contentWindow.history.forward();
+            } catch(e) {
+                showNotification('Browser', 'Cannot go forward', 'fa-exclamation', 'text-hypr-error');
+            }
+        }
+
+        function browserReload(windowId) {
+            const iframe = document.getElementById(`iframe-${windowId}`);
+            iframe.src = iframe.src;
+        }
+
+        // Music Functions
+        function handleMusicUpload(input, windowId) {
+            const files = Array.from(input.files);
+            const win = state.windows.find(w => w.id === windowId);
+            
+            files.forEach(file => {
+                const url = URL.createObjectURL(file);
+                const track = {
+                    name: file.name.replace(/\.[^/.]+$/, ""),
+                    artist: "Unknown Artist",
+                    url: url,
+                    file: file
+                };
+                
+                // Try to extract metadata
+                if (file.name.includes(' - ')) {
+                    const parts = file.name.replace(/\.[^/.]+$/, "").split(' - ');
+                    track.artist = parts[0];
+                    track.name = parts[1] || parts[0];
+                }
+                
+                state.musicFiles.push(track);
+            });
+            
+            updatePlaylist(windowId);
+            showNotification('Music', `Added ${files.length} track(s)`, 'fa-music', 'text-hypr-accent');
+            
+            if (state.musicFiles.length === files.length) {
+                loadTrack(0, windowId);
+            }
+        }
+
+        function updatePlaylist(windowId) {
+            const playlist = document.getElementById(`playlist-${windowId}`);
+            if (state.musicFiles.length === 0) {
+                playlist.innerHTML = '<div class="text-xs text-hypr-muted p-2">No tracks loaded</div>';
+                return;
+            }
+            
+            playlist.innerHTML = state.musicFiles.map((track, i) => `
+                <div class="flex items-center gap-2 p-2 rounded-lg hover:bg-white/5 cursor-pointer transition-colors ${i === getCurrentTrackIndex(windowId) ? 'bg-hypr-accent/20 text-hypr-accent' : 'text-hypr-muted'}" 
+                     onclick="loadTrack(${i}, '${windowId}')">
+                    <i class="fas fa-music text-xs"></i>
+                    <div class="flex-1 min-w-0">
+                        <div class="text-xs truncate">${track.name}</div>
+                        <div class="text-xs opacity-60 truncate">${track.artist}</div>
+                    </div>
+                    ${i === getCurrentTrackIndex(windowId) ? '<i class="fas fa-volume-up text-xs"></i>' : ''}
+                </div>
+            `).join('');
+        }
+
+        function getCurrentTrackIndex(windowId) {
+            const win = state.windows.find(w => w.id === windowId);
+            return win ? win.musicState.currentTrack : 0;
+        }
+
+        function loadTrack(index, windowId) {
+            const win = state.windows.find(w => w.id === windowId);
+            if (!win || index >= state.musicFiles.length) return;
+            
+            win.musicState.currentTrack = index;
+            const track = state.musicFiles[index];
+            const audio = document.getElementById(`audio-${windowId}`);
+            
+            audio.src = track.url;
+            document.getElementById(`track-title-${windowId}`).textContent = track.name;
+            document.getElementById(`track-artist-${windowId}`).textContent = track.artist;
+            
+            // Setup audio context for visualizer
+            setupAudioContext(audio, windowId);
+            
+            audio.onloadedmetadata = () => {
+                document.getElementById(`duration-${windowId}`).textContent = formatTime(audio.duration);
+            };
+            
+            audio.ontimeupdate = () => {
+                const progress = (audio.currentTime / audio.duration) * 100;
+                document.getElementById(`progress-${windowId}`).style.width = progress + '%';
+                document.getElementById(`current-time-${windowId}`).textContent = formatTime(audio.currentTime);
+            };
+            
+            audio.onended = () => nextTrack(windowId);
+            
+            updatePlaylist(windowId);
+            updatePlayButton(windowId, false);
+        }
+
+        function setupAudioContext(audio, windowId) {
+            if (!state.audioContext) {
+                state.audioContext = new (window.AudioContext || window.webkitAudioContext)();
+            }
+            
+            const win = state.windows.find(w => w.id === windowId);
+            if (win.musicState.analyser) return;
+            
+            const analyser = state.audioContext.createAnalyser();
+            analyser.fftSize = 64;
+            
+            const source = state.audioContext.createMediaElementSource(audio);
+            source.connect(analyser);
+            analyser.connect(state.audioContext.destination);
+            
+            win.musicState.analyser = analyser;
+            win.musicState.source = source;
+            
+            visualize(windowId);
+        }
+
+        function visualize(windowId) {
+            const win = state.windows.find(w => w.id === windowId);
+            if (!win || !win.musicState.analyser) return;
+            
+            const analyser = win.musicState.analyser;
+            const bufferLength = analyser.frequencyBinCount;
+            const dataArray = new Uint8Array(bufferLength);
+            const bars = document.querySelectorAll(`#visualizer-${windowId} .audio-bar`);
+            
+            function draw() {
+                if (!document.getElementById(`visualizer-${windowId}`)) return;
+                
+                analyser.getByteFrequencyData(dataArray);
+                
+                for (let i = 0; i < bars.length; i++) {
+                    const value = dataArray[i % bufferLength];
+                    const height = Math.max(4, (value / 255) * 30);
+                    bars[i].style.height = height + 'px';
+                }
+                
+                requestAnimationFrame(draw);
+            }
+            
+            draw();
+        }
+
+        function toggleMusic(windowId) {
+            const audio = document.getElementById(`audio-${windowId}`);
+            if (!audio.src) {
+                showNotification('Music', 'No track loaded', 'fa-exclamation', 'text-hypr-warning');
+                return;
+            }
+            
+            if (state.audioContext && state.audioContext.state === 'suspended') {
+                state.audioContext.resume();
+            }
+            
+            if (audio.paused) {
+                audio.play();
+                updatePlayButton(windowId, true);
+            } else {
+                audio.pause();
+                updatePlayButton(windowId, false);
+            }
+        }
+
+        function updatePlayButton(windowId, isPlaying) {
+            const btn = document.getElementById(`play-btn-${windowId}`);
+            btn.innerHTML = isPlaying ? '<i class="fas fa-pause text-xl"></i>' : '<i class="fas fa-play text-xl ml-1"></i>';
+        }
+
+        function prevTrack(windowId) {
+            const win = state.windows.find(w => w.id === windowId);
+            if (!win) return;
+            
+            let newIndex = win.musicState.currentTrack - 1;
+            if (newIndex < 0) newIndex = state.musicFiles.length - 1;
+            loadTrack(newIndex, windowId);
+        }
+
+        function nextTrack(windowId) {
+            const win = state.windows.find(w => w.id === windowId);
+            if (!win) return;
+            
+            let newIndex = win.musicState.currentTrack + 1;
+            if (newIndex >= state.musicFiles.length) newIndex = 0;
+            loadTrack(newIndex, windowId);
+        }
+
+        function seekMusic(event, windowId) {
+            const audio = document.getElementById(`audio-${windowId}`);
+            if (!audio.duration) return;
+            
+            const rect = event.currentTarget.getBoundingClientRect();
+            const percent = (event.clientX - rect.left) / rect.width;
+            audio.currentTime = percent * audio.duration;
+        }
+
+        function formatTime(seconds) {
+            if (isNaN(seconds)) return '0:00';
+            const mins = Math.floor(seconds / 60);
+            const secs = Math.floor(seconds % 60);
+            return `${mins}:${secs.toString().padStart(2, '0')}`;
+        }
+
+        // Window Management
+        function closeWindow(id) {
+            const win = state.windows.find(w => w.id === id);
+            if (win) {
+                // Stop audio if music window
+                const audio = document.getElementById(`audio-${id}`);
+                if (audio) {
+                    audio.pause();
+                    audio.src = '';
+                }
+                
+                win.element.style.transform = 'scale(0.9)';
+                win.element.style.opacity = '0';
+                setTimeout(() => {
+                    win.element.remove();
+                    state.windows = state.windows.filter(w => w.id !== id);
+                    if (state.windows.length === 0) {
+                        els.activeWindowIndicator.classList.add('opacity-0');
+                    } else {
+                        els.windowTitleText.textContent = state.windows[state.windows.length - 1].app.name;
+                    }
+                }, 200);
+            }
+        }
+
+        function minimizeWindow(id) {
+            const win = state.windows.find(w => w.id === id);
+            if (win) {
+                win.element.style.display = 'none';
+            }
+        }
+
+        function maximizeWindow(id) {
+            const win = state.windows.find(w => w.id === id);
+            if (win) {
+                const isMaxed = win.element.style.width === '100%';
+                if (isMaxed) {
+                    win.element.style.width = '700px';
+                    win.element.style.height = '500px';
+                    win.element.style.left = '100px';
+                    win.element.style.top = '50px';
+                    win.element.style.borderRadius = '0.75rem';
+                } else {
+                    win.element.style.width = '100%';
+                    win.element.style.height = '100%';
+                    win.element.style.left = '0';
+                    win.element.style.top = '0';
+                    win.element.style.borderRadius = '0';
+                }
+            }
+        }
+
+        function focusWindow(id) {
+            state.windows.forEach(w => {
+                w.element.style.zIndex = w.id === id ? '100' : '10';
+                if (w.id === id) {
+                    w.element.classList.add('active-glow');
+                    els.windowTitleText.textContent = w.app.name;
+                } else {
+                    w.element.classList.remove('active-glow');
+                }
+            });
+        }
+
+        let dragOffset = { x: 0, y: 0 };
+        let draggedWindow = null;
+
+        function startDrag(e, id) {
+            if (e.target.tagName === 'BUTTON') return;
+            draggedWindow = state.windows.find(w => w.id === id);
+            if (draggedWindow) {
+                const rect = draggedWindow.element.getBoundingClientRect();
+                dragOffset.x = e.clientX - rect.left;
+                dragOffset.y = e.clientY - rect.top;
+                draggedWindow.element.classList.add('dragging');
+                focusWindow(id);
+            }
+        }
+
+        document.addEventListener('mousemove', (e) => {
+            if (draggedWindow) {
+                e.preventDefault();
+                draggedWindow.element.style.left = (e.clientX - dragOffset.x) + 'px';
+                draggedWindow.element.style.top = (e.clientY - dragOffset.y) + 'px';
+            }
+        });
+
+        document.addEventListener('mouseup', () => {
+            if (draggedWindow) {
+                draggedWindow.element.classList.remove('dragging');
+                draggedWindow = null;
+            }
+        });
+
+        // Terminal
+        function handleTerminal(e, windowId) {
+            if (e.key === 'Enter') {
+                const input = e.target;
+                const cmd = input.value.trim();
+                const term = document.getElementById('term-' + windowId);
+                
+                const line = document.createElement('div');
+                line.className = 'text-green-400 mb-1';
+                line.innerHTML = `user@hypr-os ~ $ <span class="text-hypr-text">${cmd}</span>`;
+                term.insertBefore(line, term.lastElementChild);
+                
+                let output = '';
+                switch(cmd) {
+                    case 'help':
+                        output = 'Available: help, clear, neofetch, ls, pwd, date, reboot, shutdown, open';
+                        break;
+                    case 'clear':
+                        term.innerHTML = `
+                            <div class="text-green-400 flex items-center gap-2">
+                                user@hypr-os ~ $ 
+                                <input type="text" class="bg-transparent border-none outline-none text-hypr-text flex-1 font-mono" 
+                                       onkeydown="handleTerminal(event, '${windowId}')" autocomplete="off">
+                            </div>`;
+                        term.querySelector('input').focus();
+                        return;
+                    case 'ls':
+                        output = 'Documents  Downloads  Music  Pictures  Videos  .config';
+                        break;
+                    case 'pwd':
+                        output = '/home/user';
+                        break;
+                    case 'date':
+                        output = new Date().toString();
+                        break;
+                    case 'reboot':
+                        showNotification('System', 'Rebooting...', 'fa-redo', 'text-hypr-warning');
+                        setTimeout(() => location.reload(), 2000);
+                        break;
+                    case 'shutdown':
+                        showNotification('System', 'Shutting down...', 'fa-power-off', 'text-hypr-error');
+                        document.body.style.opacity = '0';
+                        setTimeout(() => document.body.style.opacity = '1', 3000);
+                        break;
+                    case 'open':
+                        output = 'Usage: open <app> (browser, music, files, etc)';
+                        break;
+                    default:
+                        if (cmd.startsWith('open ')) {
+                            const app = cmd.split(' ')[1];
+                            openApp(app);
+                            output = `Opening ${app}...`;
+                        } else {
+                            output = `Command not found: ${cmd}`;
+                        }
+                }
+                
+                if (output) {
+                    const outLine = document.createElement('div');
+                    outLine.className = 'text-hypr-text mb-2 whitespace-pre-wrap';
+                    outLine.textContent = output;
+                    term.insertBefore(outLine, term.lastElementChild);
+                }
+                
+                input.value = '';
+                term.scrollTop = term.scrollHeight;
+            }
+        }
+
+        // Calculator
+        const calcStates = {};
+        function calcInput(val, windowId) {
+            if (!calcStates[windowId]) calcStates[windowId] = '';
+            
+            const display = document.getElementById(`calc-display-${windowId}`);
+            if (val === 'C') {
+                calcStates[windowId] = '';
+                display.textContent = '0';
+            } else if (val === '=') {
+                try {
+                    const result = eval(calcStates[windowId].replace('×', '*').replace('÷', '/'));
+                    display.textContent = result;
+                    calcStates[windowId] = String(result);
+                } catch {
+                    display.textContent = 'Error';
+                    calcStates[windowId] = '';
+                }
+            } else if (val === '±') {
+                calcStates[windowId] = calcStates[windowId].startsWith('-') ? calcStates[windowId].slice(1) : '-' + calcStates[windowId];
+                display.textContent = calcStates[windowId] || '0';
+            } else {
+                calcStates[windowId] += val;
+                display.textContent = calcStates[windowId];
+            }
+        }
+
+        // System Functions
+        function toggleNetwork() {
+            state.wifi = !state.wifi;
+            const icon = document.getElementById('wifi-icon');
+            icon.className = state.wifi ? 'fas fa-wifi' : 'fas fa-wifi-slash';
+            icon.style.opacity = state.wifi ? '1' : '0.5';
+            showNotification('Network', state.wifi ? 'Connected to Wi-Fi' : 'Wi-Fi disconnected', 'fa-wifi', state.wifi ? 'text-hypr-success' : 'text-hypr-muted');
+        }
+
+        function toggleBluetooth() {
+            state.bluetooth = !state.bluetooth;
+            const icon = document.getElementById('bt-icon');
+            icon.className = state.bluetooth ? 'fab fa-bluetooth-b text-hypr-accent' : 'fab fa-bluetooth-b';
+            showNotification('Bluetooth', state.bluetooth ? 'Bluetooth enabled' : 'Bluetooth disabled', 'fa-bluetooth-b', state.bluetooth ? 'text-hypr-accent' : 'text-hypr-muted');
+        }
+
+        function toggleDoNotDisturb() {
+            state.dnd = !state.dnd;
+            const icon = document.getElementById('dnd-icon');
+            icon.className = state.dnd ? 'fas fa-bell-slash text-hypr-warning' : 'fas fa-bell';
+            showNotification('Do Not Disturb', state.dnd ? 'Enabled' : 'Disabled', state.dnd ? 'fa-bell-slash' : 'fa-bell', 'text-hypr-warning');
+        }
+
+        function toggleBattery() {
+            const levels = [15, 45, 75, 95, 100];
+            const current = parseInt(document.getElementById('battery-text').textContent);
+            const next = levels[(levels.indexOf(current) + 1) % levels.length];
+            document.getElementById('battery-text').textContent = next + '%';
+            
+            const icon = document.getElementById('battery-icon');
+            if (next < 20) icon.className = 'fas fa-battery-quarter text-hypr-error';
+            else if (next < 50) icon.className = 'fas fa-battery-half text-hypr-warning';
+            else if (next < 80) icon.className = 'fas fa-battery-three-quarters text-hypr-success';
+            else icon.className = 'fas fa-battery-full text-hypr-success';
+            
+            showNotification('Battery', `${next}% remaining`, 'fa-battery-half', next < 20 ? 'text-hypr-error' : 'text-hypr-success');
+        }
+
+        function toggleVolume() {
+            els.volumeOsd.classList.remove('hidden');
+            setTimeout(() => els.volumeOsd.classList.add('hidden'), 2000);
+        }
+
+        function updateVolume(val) {
+            state.volume = val;
+            document.getElementById('volume-display').textContent = val + '%';
+            document.getElementById('volume-bar').style.width = val + '%';
+            document.getElementById('volume-text').textContent = val + '%';
+            
+            const icon = document.getElementById('volume-icon');
+            if (val == 0) icon.className = 'fas fa-volume-mute text-hypr-error';
+            else if (val < 30) icon.className = 'fas fa-volume-low';
+            else if (val < 70) icon.className = 'fas fa-volume-down';
+            else icon.className = 'fas fa-volume-high';
+            
+            // Update all playing audio
+            document.querySelectorAll('audio').forEach(audio => {
+                audio.volume = val / 100;
+            });
+        }
+
+        function updateBrightness(val) {
+            state.brightness = val;
+            document.getElementById('brightness-display').textContent = val + '%';
+            els.wallpaperDim.style.opacity = (100 - val) / 100 * 0.8;
+        }
+
+        function updateDim(val) {
+            els.wallpaperDim.style.background = `rgba(0,0,0,${val/100})`;
+        }
+
+        function toggleCalendar() {
+            const isHidden = els.calendarPopup.classList.contains('hidden');
+            if (isHidden) {
+                renderCalendar();
+                els.calendarPopup.classList.remove('hidden');
+            } else {
+                els.calendarPopup.classList.add('hidden');
+            }
+        }
+
+        function renderCalendar() {
+            const year = state.calendarDate.getFullYear();
+            const month = state.calendarDate.getMonth();
+            document.getElementById('cal-month').textContent = state.calendarDate.toLocaleDateString('en-US', { month: 'long', year: 'numeric' });
+            
+            const firstDay = new Date(year, month, 1).getDay();
+            const daysInMonth = new Date(year, month + 1, 0).getDate();
+            const today = new Date().getDate();
+            const isCurrentMonth = new Date().getMonth() === month;
+            
+            let html = '';
+            for (let i = 0; i < firstDay; i++) html += '<div></div>';
+            for (let day = 1; day <= daysInMonth; day++) {
+                const isToday = isCurrentMonth && day === today;
+                const classes = isToday ? 'bg-hypr-accent text-hypr-bg rounded-lg font-bold' : 'hover:bg-white/10 rounded-lg cursor-pointer';
+                html += `<div class="${classes} h-8 flex items-center justify-center text-sm">${day}</div>`;
+            }
+            document.getElementById('calendar-days').innerHTML = html;
+        }
+
+        function changeMonth(delta) {
+            state.calendarDate.setMonth(state.calendarDate.getMonth() + delta);
+            renderCalendar();
+        }
+
+        function showPowerMenu() {
+            els.powerMenu.classList.remove('hidden');
+        }
+
+        function hidePowerMenu() {
+            els.powerMenu.classList.add('hidden');
+        }
+
+        function sleepSystem() {
+            showNotification('System', 'Sleeping...', 'fa-moon', 'text-hypr-accent2');
+            document.body.style.opacity = '0.1';
+            setTimeout(() => {
+                document.body.style.opacity = '1';
+                hidePowerMenu();
+                showNotification('System', 'Woke up', 'fa-sun', 'text-yellow-400');
+            }, 3000);
+        }
+
+        function restartSystem() {
+            showNotification('System', 'Restarting...', 'fa-redo', 'text-hypr-warning');
+            setTimeout(() => location.reload(), 2000);
+        }
+
+        function shutdownSystem() {
+            showNotification('System', 'Goodbye!', 'fa-power-off', 'text-hypr-error');
+            document.body.innerHTML = '<div class="h-screen w-screen bg-black flex items-center justify-center text-hypr-muted font-mono">System halted.</div>';
+        }
+
+        function toggleSettings() {
+            const isHidden = els.settingsWindow.classList.contains('hidden');
+            if (isHidden) {
+                els.settingsWindow.classList.remove('hidden');
+                document.getElementById('wallpaper-input').value = state.wallpaper.startsWith('data:') ? '' : state.wallpaper;
+            } else {
+                els.settingsWindow.classList.add('hidden');
+            }
+        }
+
+        function applyWallpaper() {
+            const url = document.getElementById('wallpaper-input').value;
+            if (url) {
+                state.wallpaper = url;
+                els.wallpaper.style.backgroundImage = `url('${url}')`;
+                saveState();
+                showNotification('Settings', 'Wallpaper updated', 'fa-image', 'text-hypr-accent');
+            }
+        }
+
+        function handleFileUpload(input) {
+            const file = input.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = (e) => {
+                    state.wallpaper = e.target.result;
+                    els.wallpaper.style.backgroundImage = `url('${e.target.result}')`;
+                    saveState();
+                    showNotification('Settings', 'Wallpaper uploaded', 'fa-upload', 'text-hypr-success');
+                };
+                reader.readAsDataURL(file);
+            }
+        }
+
+        function setPresetWallpaper(url) {
+            state.wallpaper = url;
+            els.wallpaper.style.backgroundImage = `url('${url}')`;
+            saveState();
+            showNotification('Settings', 'Wallpaper changed', 'fa-image', 'text-hypr-accent');
+        }
+
+        function toggleGlow() {
+            state.glow = !state.glow;
+            const btn = document.getElementById('glow-toggle-btn');
+            const knob = btn.querySelector('div');
+            if (state.glow) {
+                btn.classList.add('bg-hypr-accent');
+                btn.classList.remove('bg-gray-600');
+                knob.style.right = '4px';
+                knob.style.left = 'auto';
+                state.windows.forEach(w => w.element.classList.add('active-glow'));
+            } else {
+                btn.classList.remove('bg-hypr-accent');
+                btn.classList.add('bg-gray-600');
+                knob.style.left = '4px';
+                knob.style.right = 'auto';
+                state.windows.forEach(w => w.element.classList.remove('active-glow'));
+            }
+            saveState();
+        }
+
+        function switchWorkspace(ws) {
+            state.activeWorkspace = ws;
+            document.querySelectorAll('.workspace').forEach(w => {
+                w.classList.remove('active');
+                w.classList.add('text-hypr-muted');
+                if (parseInt(w.dataset.ws) === ws) {
+                    w.classList.add('active');
+                    w.classList.remove('text-hypr-muted');
+                }
+            });
+            
+            state.windows.forEach(win => {
+                win.element.style.transform = 'scale(0.95)';
+                win.element.style.opacity = '0.5';
+                setTimeout(() => {
+                    win.element.style.transform = 'scale(1)';
+                    win.element.style.opacity = '1';
+                }, 200);
+            });
+            
+            showNotification('Workspace', `Switched to workspace ${ws}`, 'fa-desktop', 'text-hypr-accent');
+        }
+
+        function saveState() {
+            localStorage.setItem('hypros_state', JSON.stringify({
+                wallpaper: state.wallpaper,
+                volume: state.volume,
+                brightness: state.brightness,
+                glow: state.glow
+            }));
+        }
+
+        function loadState() {
+            const saved = localStorage.getItem('hypros_state');
+            if (saved) {
+                const parsed = JSON.parse(saved);
+                state.wallpaper = parsed.wallpaper || state.wallpaper;
+                state.volume = parsed.volume || 75;
+                state.brightness = parsed.brightness || 80;
+                state.glow = parsed.glow !== undefined ? parsed.glow : true;
+                
+                els.wallpaper.style.backgroundImage = `url('${state.wallpaper}')`;
+                updateVolume(state.volume);
+                updateBrightness(state.brightness);
+                if (!state.glow) toggleGlow();
+            }
+        }
+
+        function resetAll() {
+            if (confirm('Reset all settings to default?')) {
+                localStorage.removeItem('hypros_state');
+                location.reload();
+            }
+        }
+
+        // Draggable Settings
+        makeDraggable(els.settingsWindow, els.settingsHeader);
+
+        function makeDraggable(element, handle) {
+            let isDragging = false;
+            let currentX, currentY, initialX, initialY;
+            let xOffset = 0, yOffset = 0;
+
+            handle.addEventListener('mousedown', dragStart);
+            document.addEventListener('mouseup', dragEnd);
+            document.addEventListener('mousemove', drag);
+
+            function dragStart(e) {
+                initialX = e.clientX - xOffset;
+                initialY = e.clientY - yOffset;
+                if (e.target === handle || handle.contains(e.target)) {
+                    isDragging = true;
+                }
+            }
+
+            function dragEnd() {
+                initialX = currentX;
+                initialY = currentY;
+                isDragging = false;
+            }
+
+            function drag(e) {
+                if (isDragging) {
+                    e.preventDefault();
+                    currentX = e.clientX - initialX;
+                    currentY = e.clientY - initialY;
+                    xOffset = currentX;
+                    yOffset = currentY;
+                    element.style.transform = `translate(${currentX}px, ${currentY}px)`;
+                }
+            }
+        }
+
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape') {
+                if (!els.powerMenu.classList.contains('hidden')) hidePowerMenu();
+                else if (!els.calendarPopup.classList.contains('hidden')) els.calendarPopup.classList.add('hidden');
+                else if (!els.settingsWindow.classList.contains('hidden')) toggleSettings();
+                else if (els.launcher.style.display !== 'none') toggleLauncher();
+                else if (state.windows.length > 0) closeWindow(state.windows[state.windows.length - 1].id);
+            }
+            
+            if (e.key === 'Meta' || e.key === 'Super') {
+                e.preventDefault();
+                toggleLauncher();
+            }
+            
+            if (e.key >= '1' && e.key <= '5' && e.altKey) {
+                switchWorkspace(parseInt(e.key));
+            }
+        });
+
+        document.addEventListener('click', (e) => {
+            if (!els.calendarPopup.contains(e.target) && !e.target.closest('header')) {
+                els.calendarPopup.classList.add('hidden');
+            }
+        });
+
+        loadState();
+        renderApps();
+        renderRecent();
+
+        setTimeout(() => {
+            showNotification('Welcome', 'HyprOS loaded. Press Super to open launcher.', 'fa-desktop', 'text-hypr-accent');
+        }, 1000);
+
+        setInterval(() => {
+            if (Math.random() > 0.7) {
+                const current = parseInt(document.getElementById('battery-text').textContent);
+                if (current > 10) {
+                    document.getElementById('battery-text').textContent = (current - 1) + '%';
+                }
+            }
+        }, 30000);
+
+    </script>
+</body>
+</html>

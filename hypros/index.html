@@ -738,7 +738,9 @@
                             location.href = url;
                         }
                     } else {
-                        searchWeb();
+                        let search = query;
+                        url = 'https://google.com/search?q=' + search;
+                        location.href = url;
                     }
                     els.globalSearch.value = '';
                 }

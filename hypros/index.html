@@ -2693,7 +2693,7 @@ Memory: ${navigator.deviceMemory || '?'} GB`;
                     else if (els.launcher.style.display !== 'none') toggleLauncher();
                     else if (!els.settingsWindow.classList.contains('hidden')) toggleSettings();
                 }
-                if (e.key === 'Meta' || e.key === 'Super') {
+                if (e.altKey && e.key === ' ') {
                     e.preventDefault();
                     toggleLauncher();
                 }

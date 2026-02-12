@@ -811,27 +811,17 @@
                     e.preventDefault();
                     const query = els.globalSearch.value.trim();
                     if (!query) return;
-                    
+                    let url;
                     if (query.includes('.') && !query.includes(' ')) {
-                        let url = query;
+                        url = query;
                         if (!url.startsWith('http')) {
                             url = 'https://' + url;
                         }
-                        openApp('browser');
-                        setTimeout(() => {
-                            const browserWin = state.windows.find(w => w.app.id === 'browser');
-                            if (browserWin) {
-                                const urlInput = document.getElementById(`url-${browserWin.id}`);
-                                const iframe = document.getElementById(`iframe-${browserWin.id}`);
-                                if (urlInput && iframe) {
-                                    urlInput.value = url;
-                                    iframe.src = url;
-                                }
-                            }
-                        }, 100);
                     } else {
-                        searchWeb();
+                        let search = encodeURIComponent(query);
+                        url = 'https://google.com/search?q=' + search;
                     }
+                    location.href = url;
                     els.globalSearch.value = '';
                 }
             });

@@ -808,6 +808,34 @@
             </section>
 
             <section class="space-y-3">
+                <h3 class="text-xs font-bold text-hypr-muted uppercase tracking-wider">Desktop Widgets</h3>
+                <div class="grid grid-cols-3 gap-2 mb-3">
+                    <button onclick="addWidget('todo')" class="p-3 bg-hypr-surface/50 rounded-lg hover:bg-hypr-accent/20 transition-colors text-center group">
+                        <i class="fas fa-check-square text-hypr-accent text-xl mb-1 group-hover:scale-110 transition-transform"></i>
+                        <div class="text-xs">Todo</div>
+                    </button>
+                    <button onclick="addWidget('weather')" class="p-3 bg-hypr-surface/50 rounded-lg hover:bg-hypr-accent2/20 transition-colors text-center group">
+                        <i class="fas fa-cloud-sun text-hypr-accent2 text-xl mb-1 group-hover:scale-110 transition-transform"></i>
+                        <div class="text-xs">Weather</div>
+                    </button>
+                    <button onclick="addWidget('battery')" class="p-3 bg-hypr-surface/50 rounded-lg hover:bg-hypr-success/20 transition-colors text-center group">
+                        <i class="fas fa-battery-full text-hypr-success text-xl mb-1 group-hover:scale-110 transition-transform"></i>
+                        <div class="text-xs">Battery</div>
+                    </button>
+                </div>
+                
+                <!-- Active widgets list for easy deletion (mobile-friendly) -->
+                <div id="settings-widgets-list" class="space-y-2 max-h-32 overflow-auto">
+                    <div class="text-xs text-hypr-muted p-2">No active widgets</div>
+                </div>
+                
+                <div class="text-xs text-hypr-muted mt-2 flex items-center gap-1">
+                    <i class="fas fa-info-circle"></i>
+                    <span>Long-press widget headers to drag on mobile</span>
+                </div>
+            </section>
+
+            <section class="space-y-3">
                 <h3 class="text-xs font-bold text-hypr-muted uppercase tracking-wider">Appearance</h3>
                 <div class="flex items-center justify-between p-2 bg-hypr-surface/50 rounded-lg">
                     <span>Border Glow</span>

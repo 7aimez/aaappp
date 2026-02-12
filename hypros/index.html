@@ -3641,15 +3641,19 @@ Memory: ${navigator.deviceMemory || '?'} GB`;
             
             const doDrag = (e) => {
                 if (!isDragging) return;
+                e.preventDefault();
                 const clientX = e.type.includes('touch') ? e.touches[0].clientX : e.clientX;
                 const clientY = e.type.includes('touch') ? e.touches[0].clientY : e.clientY;
                 
-                widget.x = initialX + (clientX - startX);
-                widget.y = initialY + (clientY - startY);
+                const gridSize = 90; // Match desktop icon grid
                 
-                // Keep in bounds
-                widget.x = Math.max(0, Math.min(window.innerWidth - 280, widget.x));
-                widget.y = Math.max(50, Math.min(window.innerHeight - 200, widget.y));
+                // Calculate raw position
+                let rawX = initialX + (clientX - startX);
+                let rawY = initialY + (clientY - startY);
+                
+                // Snap to grid
+                widget.x = Math.max(0, Math.min(window.innerWidth - 280, Math.round(rawX / gridSize) * gridSize));
+                widget.y = Math.max(50, Math.min(window.innerHeight - 200, Math.round(rawY / gridSize) * gridSize));
                 
                 el.style.left = widget.x + 'px';
                 el.style.top = widget.y + 'px';

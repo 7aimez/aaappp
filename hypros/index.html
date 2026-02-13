@@ -952,13 +952,20 @@
             weather: {
                 temp: 22,
                 desc: 'Partly Cloudy',
-                location: 'Local',
-                loading: false
+                location: 'Cambridge, UK',
+                loading: false,
+                error: null,
+                lat: 52.2053,
+                lon: 0.1218,
+                feelsLike: null,
+                lastUpdated: null
             },
             battery: {
                 level: 85,
                 charging: false,
-                timeRemaining: '3h 20m'
+                timeRemaining: '3h 20m',
+                realLevel: undefined,
+                realCharging: undefined
             }
         };
 
@@ -1010,6 +1017,7 @@
             renderApps();
             renderQuickLinks();
             updateSystemInfo();
+            initBatteryMonitoring();
             setInterval(updateSystemInfo, 2000);
             setupGlobalEvents();
             setupSearchBar();
@@ -3587,30 +3595,48 @@ Memory: ${navigator.deviceMemory || '?'} GB`;
                     break;
                     
                 case 'weather':
+                    const isLoading = widgetData.weather.loading;
+                    const hasError = widgetData.weather.error;
                     content = `
                         <div class="weather-widget">
                             <div class="desktop-widget-header">
                                 <span class="desktop-widget-title"><i class="fas fa-cloud-sun mr-2"></i>Weather</span>
                                 <div class="desktop-widget-close" onclick="removeWidget(${index})"><i class="fas fa-times text-xs"></i></div>
                             </div>
-                            <div class="flex items-center justify-between">
-                                <div>
-                                    <div class="weather-temp">${widgetData.weather.temp}°</div>
-                                    <div class="weather-desc">${widgetData.weather.desc}</div>
-                                    <div class="weather-location"><i class="fas fa-map-marker-alt mr-1"></i>${widgetData.weather.location}</div>
+                            ${isLoading ? `
+                                <div class="flex items-center justify-center py-4">
+                                    <i class="fas fa-spinner fa-spin text-2xl text-hypr-accent"></i>
                                 </div>
-                                <i class="fas fa-cloud-sun text-4xl text-hypr-accent opacity-80"></i>
-                            </div>
-                            <button onclick="refreshWeather()" class="mt-3 w-full py-1.5 text-xs bg-white/5 hover:bg-white/10 rounded-lg text-hypr-muted transition-colors">
-                                <i class="fas fa-refresh mr-1"></i> Refresh
-                            </button>
+                            ` : hasError ? `
+                                <div class="text-center py-2">
+                                    <i class="fas fa-exclamation-triangle text-hypr-warning text-2xl mb-2"></i>
+                                    <div class="text-xs text-hypr-muted">${widgetData.weather.error}</div>
+                                    <button onclick="refreshWeather(${index})" class="mt-2 text-xs bg-hypr-accent/20 text-hypr-accent px-3 py-1 rounded">
+                                        Retry
+                                    </button>
+                                </div>
+                            ` : `
+                                <div class="flex items-center justify-between">
+                                    <div>
+                                        <div class="weather-temp">${widgetData.weather.temp}°</div>
+                                        <div class="weather-desc">${widgetData.weather.desc}</div>
+                                        <div class="weather-location"><i class="fas fa-map-marker-alt mr-1"></i>${widgetData.weather.location}</div>
+                                        ${widgetData.weather.feelsLike ? `<div class="text-xs text-hypr-muted mt-1">Feels like ${widgetData.weather.feelsLike}°</div>` : ''}
+                                    </div>
+                                    <i class="fas ${getWeatherIcon(widgetData.weather.desc)} text-4xl text-hypr-accent opacity-80"></i>
+                                </div>
+                                <button onclick="refreshWeather(${index})" class="mt-3 w-full py-1.5 text-xs bg-white/5 hover:bg-white/10 rounded-lg text-hypr-muted transition-colors">
+                                    <i class="fas fa-refresh mr-1"></i> Refresh
+                                </button>
+                            `}
                         </div>
                     `;
                     break;
                     
                 case 'battery':
-                    const level = widgetData.battery.level;
-                    const statusClass = level > 60 ? 'high' : level > 20 ? 'medium' : 'low';
+                    const batteryLevel = widgetData.battery.realLevel !== undefined ? widgetData.battery.realLevel : widgetData.battery.level;
+                    const isCharging = widgetData.battery.realCharging !== undefined ? widgetData.battery.realCharging : widgetData.battery.charging;
+                    const statusClass = batteryLevel > 60 ? 'high' : batteryLevel > 20 ? 'medium' : 'low';
                     content = `
                         <div class="battery-widget">
                             <div class="desktop-widget-header">
@@ -3618,13 +3644,13 @@ Memory: ${navigator.deviceMemory || '?'} GB`;
                                 <div class="desktop-widget-close" onclick="removeWidget(${index})"><i class="fas fa-times text-xs"></i></div>
                             </div>
                             <div class="battery-level">
-                                <div class="battery-fill ${statusClass}" style="width: ${level}%">
-                                    ${level > 20 ? level + '%' : ''}
+                                <div class="battery-fill ${statusClass}" style="width: ${batteryLevel}%">
+                                    ${batteryLevel > 20 ? batteryLevel + '%' : ''}
                                 </div>
                             </div>
                             <div class="battery-stats">
-                                <span><i class="fas ${widgetData.battery.charging ? 'fa-bolt text-hypr-warning' : 'fa-plug'} mr-1"></i>${widgetData.battery.charging ? 'Charging' : 'On Battery'}</span>
-                                <span>${widgetData.battery.timeRemaining} left</span>
+                                <span><i class="fas ${isCharging ? 'fa-bolt text-hypr-warning' : 'fa-plug'} mr-1"></i>${isCharging ? 'Charging' : 'On Battery'}</span>
+                                <span id="battery-time-${index}">${isCharging ? 'Until full' : 'Remaining'}</span>
                             </div>
                         </div>
                     `;
@@ -3722,8 +3748,8 @@ Memory: ${navigator.deviceMemory || '?'} GB`;
             }
         }
         
-        function toggleTodo(index) {
-            widgetData.todo.items[index].done = !widgetData.todo.items[index].done;
+        function toggleTodo(itemIndex, widgetIndex) {
+            widgetData.todo.items[itemIndex].done = !widgetData.todo.items[itemIndex].done;
             renderWidgets();
             saveState();
         }
@@ -3786,6 +3812,121 @@ Memory: ${navigator.deviceMemory || '?'} GB`;
             }
             loadMusicFromFS();
             loadPicturesFromFS();
+        }
+
+        function initBatteryMonitoring() {
+            if ('getBattery' in navigator) {
+                navigator.getBattery().then(battery => {
+                    function updateBatteryData() {
+                        widgetData.battery.realLevel = Math.round(battery.level * 100);
+                        widgetData.battery.realCharging = battery.charging;
+                        
+                        // Calculate time remaining
+                        if (battery.charging) {
+                            widgetData.battery.timeRemaining = battery.chargingTime === Infinity ? 
+                                'Calculating...' : formatTime(battery.chargingTime);
+                        } else {
+                            widgetData.battery.timeRemaining = battery.dischargingTime === Infinity ? 
+                                'Calculating...' : formatTime(battery.dischargingTime);
+                        }
+                        
+                        // Update all battery widgets
+                        renderWidgets();
+                        saveState();
+                    }
+                    
+                    updateBatteryData();
+                    
+                    // Listen for changes
+                    battery.addEventListener('levelchange', updateBatteryData);
+                    battery.addEventListener('chargingchange', updateBatteryData);
+                    battery.addEventListener('chargingtimechange', updateBatteryData);
+                    battery.addEventListener('dischargingtimechange', updateBatteryData);
+                }).catch(err => {
+                    console.log('Battery API not available:', err);
+                    // Fall back to simulated data
+                    widgetData.battery.realLevel = widgetData.battery.level;
+                    widgetData.battery.realCharging = false;
+                });
+            } else {
+                // API not supported
+                widgetData.battery.realLevel = widgetData.battery.level;
+                widgetData.battery.realCharging = false;
+            }
+        }
+
+        function getWeatherIcon(desc) {
+            const desc_lower = (desc || '').toLowerCase();
+            if (desc_lower.includes('clear') || desc_lower.includes('sun')) return 'fa-sun';
+            if (desc_lower.includes('cloud')) return 'fa-cloud';
+            if (desc_lower.includes('rain') || desc_lower.includes('drizzle')) return 'fa-cloud-rain';
+            if (desc_lower.includes('snow')) return 'fa-snowflake';
+            if (desc_lower.includes('thunder')) return 'fa-bolt';
+            if (desc_lower.includes('fog') || desc_lower.includes('mist')) return 'fa-smog';
+            return 'fa-cloud-sun';
+        }
+        
+        async function refreshWeather(widgetIndex) {
+            widgetData.weather.loading = true;
+            widgetData.weather.error = null;
+            renderWidgets();
+            
+            try {
+                // Use coordinates from widgetData (set to Cambridge by default)
+                const lat = widgetData.weather.lat;
+                const lon = widgetData.weather.lon;
+                
+                // Open-Meteo API - completely free, no API key needed
+                const response = await fetch(`https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&current_weather=true&hourly=relative_humidity_2m,apparent_temperature`);
+                
+                if (!response.ok) throw new Error('Weather service unavailable');
+                
+                const data = await response.json();
+                
+                if (data.current_weather) {
+                    widgetData.weather.temp = Math.round(data.current_weather.temperature);
+                    widgetData.weather.desc = getWeatherDescription(data.current_weather.weathercode);
+                    // Keep the location name from widgetData (Cambridge, UK)
+                    
+                    // Get feels like from hourly data if available
+                    if (data.hourly && data.hourly.apparent_temperature) {
+                        const currentHour = new Date().getHours();
+                        widgetData.weather.feelsLike = Math.round(data.hourly.apparent_temperature[currentHour]);
+                    }
+                    
+                    widgetData.weather.loading = false;
+                    widgetData.weather.lastUpdated = Date.now();
+                    renderWidgets();
+                    saveState();
+                } else {
+                    throw new Error('Invalid weather data');
+                }
+                
+            } catch (err) {
+                console.error('Weather fetch error:', err);
+                widgetData.weather.loading = false;
+                widgetData.weather.error = 'Failed to load weather';
+                renderWidgets();
+            }
+        }
+        
+        function getWeatherDescription(code) {
+            // WMO Weather interpretation codes (Open-Meteo)
+            const codes = {
+                0: 'Clear sky',
+                1: 'Mainly clear', 2: 'Partly cloudy', 3: 'Overcast',
+                45: 'Foggy', 48: 'Depositing rime fog',
+                51: 'Light drizzle', 53: 'Moderate drizzle', 55: 'Dense drizzle',
+                56: 'Light freezing drizzle', 57: 'Dense freezing drizzle',
+                61: 'Slight rain', 63: 'Moderate rain', 65: 'Heavy rain',
+                66: 'Light freezing rain', 67: 'Heavy freezing rain',
+                71: 'Slight snow', 73: 'Moderate snow', 75: 'Heavy snow',
+                77: 'Snow grains',
+                80: 'Slight rain showers', 81: 'Moderate rain showers', 82: 'Violent rain showers',
+                85: 'Slight snow showers', 86: 'Heavy snow showers',
+                95: 'Thunderstorm', 96: 'Thunderstorm with hail', 99: 'Thunderstorm with heavy hail'
+            };
+            return codes[code] || 'Unknown';
         }
 
         // Global Events

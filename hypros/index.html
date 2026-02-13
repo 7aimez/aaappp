@@ -724,6 +724,9 @@
                 <button onclick="openApp('paint')" class="p-2 rounded-xl hover:bg-white/10 transition-all hover:scale-110 hover:-translate-y-1">
                     <i class="fas fa-paint-brush text-2xl text-purple-400"></i>
                 </button>
+                <button onclick="openApp('appcreator')" class="p-2 rounded-xl hover:bg-white/10 transition-all hover:scale-110 hover:-translate-y-1">
+                    <i class="fas fa-plus-circle text-2xl text-green-500"></i>
+                </button>
                 <button onclick="openApp('taskmanager')" class="p-2 rounded-xl hover:bg-white/10 transition-all hover:scale-110 hover:-translate-y-1">
                     <i class="fas fa-tasks text-2xl text-red-400"></i>
                 </button>
@@ -969,6 +972,10 @@
             }
         };
 
+        let classworkData = {
+            notes: []
+        };
+
         const defaultApps = [
             { id: 'terminal', name: 'Terminal', icon: 'fa-terminal', color: 'text-green-400' },
             { id: 'files', name: 'Files', icon: 'fa-folder', color: 'text-yellow-400' },
@@ -979,6 +986,7 @@
             { id: 'paint', name: 'Paint', icon: 'fa-paint-brush', color: 'text-purple-400' },
             { id: 'settings', name: 'Settings', icon: 'fa-cog', color: 'text-hypr-accent' },
             { id: 'taskmanager', name: 'Task Manager', icon: 'fa-tasks', color: 'text-red-400' },
+            { id: 'classwork', name: 'Classwork', icon: 'fa-book', color: 'text-indigo-400' },
             { id: 'appcreator', name: 'App Creator', icon: 'fa-plus-circle', color: 'text-green-500' },
         ];
 
@@ -1068,6 +1076,7 @@
                 state.wallpaper = data.wallpaper || state.wallpaper;
                 state.volume = data.volume || 75;
                 state.glow = data.glow !== undefined ? data.glow : true;
+                classworkData = data.classworkData || { notes: [] };
                 
                 updateAppsList();
                 els.wallpaper.style.backgroundImage = `url('${state.wallpaper}')`;
@@ -1084,7 +1093,8 @@
                 customApps,
                 wallpaper: state.wallpaper,
                 volume: state.volume,
-                glow: state.glow
+                glow: state.glow,
+                classworkData
             }));
         }
 
@@ -1820,6 +1830,48 @@
                             </div>
                             <div class="flex-1 relative overflow-hidden bg-white">
                                 <canvas id="canvas-${windowId}" class="absolute inset-0 cursor-crosshair touch-none"></canvas>
+                            </div>
+                        </div>`;
+
+                case 'classwork':
+                    return `
+                        <div class="flex h-full text-sm">
+                            <div class="w-64 border-r border-white/10 flex flex-col bg-hypr-surface/30">
+                                <div class="p-3 border-b border-white/10">
+                                    <button onclick="createNewNote('${windowId}')" class="w-full py-2 bg-hypr-accent/20 text-hypr-accent rounded-lg hover:bg-hypr-accent/30 flex items-center justify-center gap-2">
+                                        <i class="fas fa-plus"></i> New Note
+                                    </button>
+                                </div>
+                                <div class="flex-1 overflow-auto p-2 space-y-1" id="notes-list-${windowId}">
+                                    ${renderNotesList(windowId)}
+                                </div>
+                            </div>
+                            <div class="flex-1 flex flex-col bg-hypr-bg/50">
+                                <div id="note-editor-${windowId}" class="hidden flex-1 flex-col">
+                                    <div class="h-12 border-b border-white/10 flex items-center justify-between px-4 bg-white/5">
+                                        <input type="text" id="note-title-${windowId}" class="bg-transparent border-none outline-none text-lg font-bold text-hypr-text flex-1" placeholder="Note Title" onchange="updateCurrentNote('${windowId}')">
+                                        <div class="flex items-center gap-2">
+                                            <span id="note-date-${windowId}" class="text-xs text-hypr-muted mr-2"></span>
+                                            <div class="flex gap-1 bg-hypr-surface rounded-lg p-1">
+                                                <button onclick="formatText('${windowId}', 'bold')" class="w-8 h-8 rounded hover:bg-white/10 flex items-center justify-center" title="Bold"><i class="fas fa-bold"></i></button>
+                                                <button onclick="formatText('${windowId}', 'italic')" class="w-8 h-8 rounded hover:bg-white/10 flex items-center justify-center" title="Italic"><i class="fas fa-italic"></i></button>
+                                                <button onclick="formatText('${windowId}', 'underline')" class="w-8 h-8 rounded hover:bg-white/10 flex items-center justify-center" title="Underline"><i class="fas fa-underline"></i></button>
+                                                <button onclick="formatText('${windowId}', 'strikeThrough')" class="w-8 h-8 rounded hover:bg-white/10 flex items-center justify-center" title="Strikethrough"><i class="fas fa-strikethrough"></i></button>
+                                                <div class="w-px h-6 bg-white/10 mx-1"></div>
+                                                <button onclick="formatText('${windowId}', 'insertUnorderedList')" class="w-8 h-8 rounded hover:bg-white/10 flex items-center justify-center" title="Bullet List"><i class="fas fa-list-ul"></i></button>
+                                                <button onclick="formatText('${windowId}', 'insertOrderedList')" class="w-8 h-8 rounded hover:bg-white/10 flex items-center justify-center" title="Numbered List"><i class="fas fa-list-ol"></i></button>
+                                            </div>
+                                            <button onclick="deleteCurrentNote('${windowId}')" class="ml-2 text-hypr-error hover:text-red-400" title="Delete Note">
+                                                <i class="fas fa-trash"></i>
+                                            </button>
+                                        </div>
+                                    </div>
+                                    <div id="note-content-${windowId}" class="flex-1 p-4 overflow-auto outline-none text-hypr-text leading-relaxed" contenteditable="true" oninput="updateCurrentNote('${windowId}')" style="min-height: 200px;"></div>
+                                </div>
+                                <div id="note-empty-${windowId}" class="flex-1 flex flex-col items-center justify-center text-hypr-muted">
+                                    <i class="fas fa-book text-6xl mb-4 opacity-30"></i>
+                                    <p>Select or create a note to start</p>
+                                </div>
                             </div>
                         </div>`;
                 
@@ -3927,6 +3979,132 @@ Memory: ${navigator.deviceMemory || '?'} GB`;
                 95: 'Thunderstorm', 96: 'Thunderstorm with hail', 99: 'Thunderstorm with heavy hail'
             };
             return codes[code] || 'Unknown';
+        }
+
+        // Classwork Functions
+        function renderNotesList(windowId) {
+            if (classworkData.notes.length === 0) {
+                return '<div class="text-xs text-hypr-muted p-4 text-center">No notes yet</div>';
+            }
+            
+            // Sort by date, newest first
+            const sorted = [...classworkData.notes].sort((a, b) => b.updatedAt - a.updatedAt);
+            
+            return sorted.map((note, idx) => {
+                const actualIdx = classworkData.notes.indexOf(note);
+                const date = new Date(note.updatedAt).toLocaleDateString();
+                const isActive = note.id === getCurrentNoteId(windowId);
+                return `
+                    <div class="p-3 rounded-lg cursor-pointer transition-all ${isActive ? 'bg-hypr-accent/20 border border-hypr-accent/30' : 'hover:bg-white/5 border border-transparent'}" 
+                         onclick="selectNote('${windowId}', ${actualIdx})">
+                        <div class="font-medium text-sm truncate ${isActive ? 'text-hypr-accent' : 'text-hypr-text'}">${escapeHtml(note.title || 'Untitled')}</div>
+                        <div class="text-xs text-hypr-muted mt-1">${date}</div>
+                        <div class="text-xs text-hypr-muted truncate mt-1 opacity-70">${stripHtml(note.content).substring(0, 50) || 'No content'}...</div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        let currentNoteIds = {};
+
+        function getCurrentNoteId(windowId) {
+            return currentNoteIds[windowId] || null;
+        }
+
+        function setCurrentNoteId(windowId, noteId) {
+            currentNoteIds[windowId] = noteId;
+        }
+
+        function createNewNote(windowId) {
+            const title = prompt('Note title:');
+            if (title === null) return; // Cancelled
+            
+            const note = {
+                id: 'note_' + Date.now(),
+                title: title || 'Untitled',
+                content: '',
+                createdAt: Date.now(),
+                updatedAt: Date.now()
+            };
+            
+            classworkData.notes.push(note);
+            saveState();
+            selectNote(windowId, classworkData.notes.length - 1);
+            showNotification('Classwork', 'Note created', 'fa-book');
+        }
+
+        function selectNote(windowId, index) {
+            const note = classworkData.notes[index];
+            if (!note) return;
+            
+            setCurrentNoteId(windowId, note.id);
+            
+            // Show editor, hide empty state
+            document.getElementById(`note-editor-${windowId}`).classList.remove('hidden');
+            document.getElementById(`note-editor-${windowId}`).classList.add('flex');
+            document.getElementById(`note-empty-${windowId}`).classList.add('hidden');
+            
+            // Populate fields
+            document.getElementById(`note-title-${windowId}`).value = note.title;
+            document.getElementById(`note-content-${windowId}`).innerHTML = note.content;
+            document.getElementById(`note-date-${windowId}`).textContent = new Date(note.updatedAt).toLocaleString();
+            
+            // Refresh list to show active state
+            document.getElementById(`notes-list-${windowId}`).innerHTML = renderNotesList(windowId);
+        }
+
+        function updateCurrentNote(windowId) {
+            const noteId = getCurrentNoteId(windowId);
+            if (!noteId) return;
+            
+            const note = classworkData.notes.find(n => n.id === noteId);
+            if (!note) return;
+            
+            note.title = document.getElementById(`note-title-${windowId}`).value;
+            note.content = document.getElementById(`note-content-${windowId}`).innerHTML;
+            note.updatedAt = Date.now();
+            
+            saveState();
+            
+            // Update date display
+            document.getElementById(`note-date-${windowId}`).textContent = new Date(note.updatedAt).toLocaleString();
+            
+            // Refresh list to show updated preview
+            document.getElementById(`notes-list-${windowId}`).innerHTML = renderNotesList(windowId);
+        }
+
+        function formatText(windowId, command) {
+            document.execCommand(command, false, null);
+            document.getElementById(`note-content-${windowId}`).focus();
+            updateCurrentNote(windowId);
+        }
+
+        function deleteCurrentNote(windowId) {
+            const noteId = getCurrentNoteId(windowId);
+            if (!noteId) return;
+            
+            if (!confirm('Delete this note?')) return;
+            
+            const idx = classworkData.notes.findIndex(n => n.id === noteId);
+            if (idx > -1) {
+                classworkData.notes.splice(idx, 1);
+                saveState();
+                
+                // Reset view
+                setCurrentNoteId(windowId, null);
+                document.getElementById(`note-editor-${windowId}`).classList.add('hidden');
+                document.getElementById(`note-editor-${windowId}`).classList.remove('flex');
+                document.getElementById(`note-empty-${windowId}`).classList.remove('hidden');
+                document.getElementById(`notes-list-${windowId}`).innerHTML = renderNotesList(windowId);
+                
+                showNotification('Classwork', 'Note deleted', 'fa-trash');
+            }
+        }
+
+        function stripHtml(html) {
+            const tmp = document.createElement('div');
+            tmp.innerHTML = html;
+            return tmp.textContent || tmp.innerText || '';
         }
 
         // Global Events

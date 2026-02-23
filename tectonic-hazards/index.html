@@ -6,6 +6,7 @@
 <title>Tectonic Hazards</title>
 <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:ital,wght@0,300;0,400;0,500;0,700;1,400&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+<script src="https://cdn.tailwindcss.com"></script>
 <style>
   :root {
     --bg: #0a0a0f;
@@ -195,7 +196,7 @@
 
   .hero h1 {
     font-family: 'Bebas Neue', cursive;
-    font-size: clamp(3.5rem, 12vw, 10rem);
+    font-size: clamp(2rem, 8vw, 6rem);
     line-height: 0.9;
     letter-spacing: -2px;
     position: relative;
@@ -747,32 +748,35 @@
 <nav>
   <div class="nav-logo"><i class="fa-solid fa-earth-americas"></i> Tectonic</div>
   <ul class="nav-links" id="navLinks">
+		<li><a href="#top">Top</a></li>	
+    <li><a href="#comparison">Comparison</a></li>
     <li><a href="#argument">Argument</a></li>
     <li><a href="#casestudy">Case Study</a></li>
     <li><a href="#recovery">Recovery</a></li>
-    <li><a href="#conclusion">Verdict</a></li>
+    <li><a href="#conclusion">Conclusion</a></li>
   </ul>
   <button class="nav-burger" id="navBurger" aria-label="Toggle navigation"><i class="fa-solid fa-bars"></i></button>
 </nav>
 
 <!-- HERO -->
-<div class="hero">
-  <div class="hero-badge"><span class="dot"></span>Geography &mdash; Tectonic Hazards</div>
-  <h1>
-    Which hazard<br>
-    is the<br>
+<div class="hero" id="top">
+	<br>
+	<h1>
+    Which hazard is the<br>
     <span class="line-accent">biggest threat?</span>
   </h1>
   <p class="hero-sub">Earthquakes, tsunamis, and volcanoes each cause damage to things in their own way &mdash; but one is clearly the most dangerous.</p>
-  <div class="hero-scroll">
+  <br><br>	
+	<div class="hero-scroll">
     <a href="#argument">
-      Scroll down to find out more...
+			SCROLL DOWN<br>
+      <i class="fa-solid fa-arrow-down"></i>
     </a>
   </div>
 </div>
 
 <!-- COMPARISON -->
-<section>
+<section id="comparison">
   <div class="reveal">
     <div class="section-label">Tectonic Hazard Comparison</div>
     <div class="section-title">Three tectonic forces. One is the biggest</div>
@@ -782,8 +786,8 @@
       <div class="comp-icon"><i class="fa-solid fa-volcano"></i></div>
       <h4>Volcanoes</h4>
       <p style="color:var(--text-dim); font-size:0.85rem;">
-        These big mountains filled with magma are deadly, localised mosters. They can destroy cities, and can cause catastrophic damage, but they can be discovered in advance by computers.
-      </p>
+        These big mountains filled with magma are deadly, localised mosters. They can destroy cities, and can cause damage, but they can be discovered in advance by computers.
+      </p><br>
       <span class="comp-verdict verdict-low">Lower threat</span>
     </div>
     <div class="comp-item">
@@ -791,13 +795,15 @@
       <h4>Earthquakes</h4>
       <p style="color:var(--text-dim); font-size:0.85rem;">
         Sudden and devastating, they emit seismic waves, that cause bulidings to break and fall over. They happen without warning, and can be bad if they are a high magnitude.
-      </p>
+      </p><br>
       <span class="comp-verdict verdict-med">High threat</span>
     </div>
     <div class="comp-item active">
       <div class="comp-icon"><i class="fa-solid fa-water"></i></div>
       <h4>Tsunamis</h4>
-      <p style="color:var(--text-dim); font-size:0.85rem;">Combines earthquake destruction with obliterating waves. They distrupt the place with an earthquake, then sends out a massive wall of water to destroy the place.</p>
+      <p style="color:var(--text-dim); font-size:0.85rem;">
+				Combines earthquake destruction with obliterating waves. They distrupt the place with an earthquake, then sends out a massive wall of water to destroy the place.
+			</p><br>
       <span class="comp-verdict verdict-high">Greatest threat</span>
     </div>
   </div>
@@ -837,19 +843,19 @@
 <section class="section-stats">
   <div class="stats-banner reveal">
     <div class="stat-box">
-      <div class="stat-icon"><i class="fa-solid fa-person-shelter"></i></div>
-      <div class="stat-number">300K+</div>
-      <div class="stat-label">Left homeless</div>
+      <div class="stat-icon"><i class="fa-solid fa-fire"></i></div>
+      <div class="stat-number">80%</div>
+      <div class="stat-label">From Ring of Fire</div>
     </div>
     <div class="stat-box">
-      <div class="stat-icon"><i class="fa-solid fa-hand-holding-heart"></i></div>
-      <div class="stat-number">$1B+</div>
-      <div class="stat-label">Red Cross donations</div>
+      <div class="stat-icon"><i class="fa-solid fa-stopwatch"></i></div>
+      <div class="stat-number">500mph</div>
+      <div class="stat-label">Max speeds	</div>
     </div>
     <div class="stat-box">
-      <div class="stat-icon"><i class="fa-solid fa-hammer"></i></div>
-      <div class="stat-number">¥23T</div>
-      <div class="stat-label">Rebuild budget</div>
+      <div class="stat-icon"><i class="fa-solid fa-ruler"></i></div>
+      <div class="stat-number">30m</div>
+      <div class="stat-label">Tallest hight</div>
     </div>
     <div class="stat-box">
       <div class="stat-icon"><i class="fa-solid fa-kit-medical"></i></div>

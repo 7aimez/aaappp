@@ -1,0 +1,292 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>New Guinea Rainforest — Fact File</title>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300;0,9..144,500;0,9..144,700;1,9..144,400&family=Karla:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #f4f1eb;
+    --bg-card: #ffffffcc;
+    --text: #2c2c2c;
+    --text-muted: #6b6b6b;
+    --accent: #3a6b4c;
+    --accent-light: #e8f0ea;
+    --border: #d4cfc6;
+    --tag-bg: #f0ebe2;
+    --shadow: rgba(60, 60, 40, 0.06);
+  }
+
+  html.dark {
+    --bg: #1a1d1a;
+    --bg-card: #242824cc;
+    --text: #e0ddd6;
+    --text-muted: #9a9a8e;
+    --accent: #7abf8a;
+    --accent-light: #2a3a2e;
+    --border: #3a3d38;
+    --tag-bg: #2e332e;
+    --shadow: rgba(0, 0, 0, 0.2);
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    font-family: 'Karla', sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+    line-height: 1.6;
+    font-weight: 400;
+  }
+
+  .page {
+    max-width: 620px;
+    margin: 0 auto;
+    padding: 48px 24px 64px;
+  }
+
+  /* Header */
+  .header {
+    margin-bottom: 40px;
+    animation: fadeUp 0.6s ease both;
+  }
+
+  .label {
+    font-family: 'Karla', sans-serif;
+    font-size: 11px;
+    font-weight: 500;
+    letter-spacing: 2.5px;
+    text-transform: uppercase;
+    color: var(--accent);
+    margin-bottom: 12px;
+  }
+
+  h1 {
+    font-family: 'Fraunces', serif;
+    font-size: clamp(32px, 7vw, 44px);
+    font-weight: 700;
+    line-height: 1.15;
+    color: var(--text);
+    margin-bottom: 8px;
+  }
+
+  .location {
+    font-size: 15px;
+    color: var(--text-muted);
+    font-weight: 300;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+
+  .location::before {
+    content: '';
+    display: inline-block;
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: var(--accent);
+    flex-shrink: 0;
+  }
+
+  /* Stat strip */
+  .stat-strip {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin: 28px 0 36px;
+    padding: 16px 20px;
+    background: var(--accent-light);
+    border-radius: 10px;
+    animation: fadeUp 0.6s ease 0.1s both;
+  }
+
+  .stat-number {
+    font-family: 'Fraunces', serif;
+    font-size: 28px;
+    font-weight: 500;
+    color: var(--accent);
+    line-height: 1;
+  }
+
+  .stat-label {
+    font-size: 13px;
+    color: var(--text-muted);
+    line-height: 1.3;
+  }
+
+  /* Divider */
+  .divider {
+    height: 1px;
+    background: var(--border);
+    margin: 0 0 36px;
+  }
+
+  /* Sections */
+  .section {
+    margin-bottom: 36px;
+    animation: fadeUp 0.6s ease both;
+  }
+
+  .section:nth-child(4) { animation-delay: 0.15s; }
+  .section:nth-child(5) { animation-delay: 0.2s; }
+  .section:nth-child(6) { animation-delay: 0.25s; }
+  .section:nth-child(7) { animation-delay: 0.3s; }
+  .section:nth-child(8) { animation-delay: 0.35s; }
+  .section:nth-child(9) { animation-delay: 0.4s; }
+
+  .section-title {
+    font-family: 'Fraunces', serif;
+    font-size: 18px;
+    font-weight: 500;
+    margin-bottom: 14px;
+    color: var(--text);
+  }
+
+  .items {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+
+  .tag {
+    display: inline-block;
+    padding: 7px 16px;
+    background: var(--tag-bg);
+    border: 1px solid var(--border);
+    border-radius: 100px;
+    font-size: 14px;
+    font-weight: 400;
+    color: var(--text);
+    white-space: nowrap;
+  }
+
+  /* Issue tags */
+  .tag--issue {
+    background: transparent;
+    border-color: var(--border);
+    color: var(--text-muted);
+  }
+
+  .tag--struggle {
+    background: transparent;
+    border: 1px dashed var(--border);
+    color: var(--text-muted);
+  }
+
+  /* Two-col layout for nature items */
+  .nature-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 24px;
+  }
+
+  @media (max-width: 400px) {
+    .nature-grid {
+      grid-template-columns: 1fr;
+      gap: 28px;
+    }
+  }
+
+  /* Animations */
+  @keyframes fadeUp {
+    from {
+      opacity: 0;
+      transform: translateY(16px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+
+  /* Scrollbar */
+  ::-webkit-scrollbar { width: 4px; }
+  ::-webkit-scrollbar-track { background: transparent; }
+  ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 4px; }
+</style>
+</head>
+<body>
+
+<div class="page">
+
+  <div class="header">
+    <div class="label">Fact File</div>
+    <h1>New Guinea Rainforest</h1>
+    <div class="location">Pacific Ocean, New Guinea Island</div>
+  </div>
+
+  <div class="stat-strip">
+    <span class="stat-number">16M</span>
+    <span class="stat-label">Population</span>
+  </div>
+
+  <div class="divider"></div>
+
+  <div class="nature-grid section">
+    <div>
+      <div class="section-title">Animals</div>
+      <div class="items" style="flex-direction:column; gap:6px;">
+        <span class="tag">Tree Kangaroos</span>
+        <span class="tag">Long-beaked Echidna</span>
+        <span class="tag">Possums</span>
+      </div>
+    </div>
+    <div>
+      <div class="section-title">Plants</div>
+      <div class="items" style="flex-direction:column; gap:6px;">
+        <span class="tag">Orchids</span>
+        <span class="tag">Figs</span>
+        <span class="tag">Ferns</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="divider"></div>
+
+  <div class="section">
+    <div class="section-title">Uses of the Rainforest</div>
+    <div class="items">
+      <span class="tag">Carbon storage</span>
+      <span class="tag">Logging</span>
+    </div>
+  </div>
+
+  <div class="section">
+    <div class="section-title">Struggles the Population Face</div>
+    <div class="items">
+      <span class="tag tag--struggle">Deforestation</span>
+      <span class="tag tag--struggle">Pollution</span>
+      <span class="tag tag--struggle">Conflict &amp; Violence</span>
+    </div>
+  </div>
+
+  <div class="section">
+    <div class="section-title">Issues &amp; Problems</div>
+    <div class="items">
+      <span class="tag tag--issue">Expansion of oil palm plantations</span>
+      <span class="tag tag--issue">Mining</span>
+      <span class="tag tag--issue">Soil erosion</span>
+    </div>
+  </div>
+
+</div>
+
+<script>
+  if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
+    document.documentElement.classList.add('dark');
+  }
+  window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', event => {
+    if (event.matches) {
+      document.documentElement.classList.add('dark');
+    } else {
+      document.documentElement.classList.remove('dark');
+    }
+  });
+</script>
+
+</body>
+</html>
+

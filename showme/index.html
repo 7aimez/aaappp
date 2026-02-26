@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Big Text Writer</title>
+    <style>
+        /* Centers the textarea on the entire screen */
+        body, html {
+            height: 100%;
+            margin: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            background-color: #f0f0f0;
+        }
+
+        /* Styles the textarea */
+        textarea {
+            width: 80vw;           /* 80% of screen width */
+            height: 60vh;          /* 60% of screen height */
+            font-size: 5rem;       /* Makes the text very big */
+            text-align: center;    /* Centers text inside the box */
+            padding: 40px;
+            border: 2px solid #ccc;
+            border-radius: 15px;
+            resize: none;          /* Disables manual resizing */
+            outline: none;         /* Removes the focus highlight */
+            font-family: sans-serif;
+        }
+    </style>
+</head>
+<body>
+
+    <textarea placeholder="Start typing..."></textarea>
+
+</body>
+</html>

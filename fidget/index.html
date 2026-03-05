@@ -1,0 +1,1660 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>Fidget</title>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg: #f5f1e8;
+  --bg2: #ebe7de;
+  --card: #ffffff;
+  --card-border: #ddd8cc;
+  --text: #1a1714;
+  --text-muted: #8a847a;
+  --dot: rgba(0,0,0,0.04);
+  --glow: rgba(232,160,64,0.08);
+  --amber: #e09030;
+  --coral: #e06058;
+  --mint: #38a878;
+  --blue: #4880c8;
+  --lavender: #8860b8;
+  --rose: #d06880;
+  --cyan: #20b2aa;
+  --lime: #9acd32;
+  --shadow: rgba(0,0,0,0.08);
+  --shadow-lg: rgba(0,0,0,0.12);
+  --inset: rgba(0,0,0,0.15);
+}
+.dark {
+  --bg: #0c0b09;
+  --bg2: #141310;
+  --card: #1c1a16;
+  --card-border: #2e2b24;
+  --text: #e8e2d4;
+  --text-muted: #7a7468;
+  --dot: rgba(255,255,255,0.025);
+  --glow: rgba(232,160,64,0.06);
+  --shadow: rgba(0,0,0,0.3);
+  --shadow-lg: rgba(0,0,0,0.5);
+  --inset: rgba(0,0,0,0.4);
+}
+
+*, *::before, *::after {
+  margin: 0; padding: 0; box-sizing: border-box;
+  -webkit-tap-highlight-color: transparent;
+  -webkit-touch-callout: none;
+  -webkit-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
+  user-select: none;
+}
+html, body {
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+  position: fixed;
+}
+body {
+  font-family: 'Syne', sans-serif;
+  background-color: var(--bg);
+  background-image: radial-gradient(var(--dot) 1px, transparent 1px);
+  background-size: 22px 22px;
+  color: var(--text);
+  overscroll-behavior: none;
+}
+body::before {
+  content: '';
+  position: fixed;
+  top: -20%; left: -10%; width: 120%; height: 60%;
+  background: radial-gradient(ellipse, var(--glow), transparent 70%);
+  pointer-events: none; z-index: 0;
+}
+
+.app-container {
+  position: relative; z-index: 1;
+  width: 100%; height: 100%;
+  overflow: hidden;
+}
+
+/* ===== SCREENS ===== */
+.screen {
+  position: absolute;
+  inset: 0;
+  overflow-y: auto;
+  overflow-x: hidden;
+  -webkit-overflow-scrolling: touch;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.4s ease;
+  padding: 20px;
+}
+.screen.active {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+/* ===== HOME SCREEN - ALLOW SCROLLING ===== */
+#homeScreen {
+  overflow-y: auto;
+  touch-action: pan-y;
+}
+
+/* ===== TOY SCREENS - NO SCROLLING ===== */
+.toy-screen {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+  overflow: hidden;
+  touch-action: none;
+}
+
+/* ===== HOME SCREEN CONTENT ===== */
+.home-content {
+  max-width: 960px;
+  margin: 0 auto;
+  padding: 40px 20px 60px;
+  min-height: 100%;
+}
+header {
+  text-align: center;
+  margin-bottom: 40px;
+  animation: fadeIn 0.8s ease-out;
+}
+header h1 {
+  font-size: 3.5rem;
+  font-weight: 800;
+  letter-spacing: 0.15em;
+  line-height: 1;
+  background: linear-gradient(135deg, var(--text), var(--amber));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+header p {
+  font-size: 0.85rem;
+  color: var(--text-muted);
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  margin-top: 8px;
+  font-weight: 400;
+}
+
+.home-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+  gap: 16px;
+  max-width: 800px;
+  margin: 0 auto;
+}
+
+.toy-thumb {
+  background: var(--card);
+  border: 1px solid var(--card-border);
+  border-radius: 16px;
+  padding: 20px 16px;
+  text-align: center;
+  cursor: pointer;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+  position: relative;
+  overflow: hidden;
+  touch-action: manipulation;
+}
+.toy-thumb::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 15%; right: 15%;
+  height: 2px;
+  background: var(--accent, var(--amber));
+  border-radius: 0 0 2px 2px;
+  opacity: 0.7;
+}
+.toy-thumb:active {
+  transform: scale(0.96);
+}
+.toy-thumb:hover {
+  box-shadow: 0 8px 32px var(--shadow);
+}
+.toy-icon {
+  width: 60px; height: 60px;
+  margin: 0 auto 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 2rem;
+}
+.toy-name {
+  font-size: 0.75rem;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--text);
+}
+
+/* ===== TOY SCREEN ===== */
+.back-btn {
+  position: absolute;
+  top: 20px; left: 20px;
+  background: var(--card);
+  border: 1px solid var(--card-border);
+  border-radius: 12px;
+  padding: 12px 20px;
+  font-family: 'Syne', sans-serif;
+  font-size: 0.75rem;
+  font-weight: 600;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--text);
+  cursor: pointer;
+  transition: transform 0.15s ease;
+  z-index: 10;
+  touch-action: manipulation;
+}
+.back-btn:active {
+  transform: scale(0.95);
+}
+.toy-title {
+  font-size: 1.5rem;
+  font-weight: 800;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  margin-bottom: 8px;
+  color: var(--text);
+}
+.toy-hint {
+  font-size: 0.7rem;
+  color: var(--text-muted);
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+  margin-bottom: 30px;
+}
+
+.toy-stage {
+  background: var(--card);
+  border: 1px solid var(--card-border);
+  border-radius: 24px;
+  padding: 40px;
+  width: 100%;
+  max-width: 400px;
+  min-height: 320px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  touch-action: none;
+}
+
+/* ===== POP-IT ===== */
+.pop-grid {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: 10px;
+  width: 100%;
+  max-width: 280px;
+  margin: 0 auto;
+  touch-action: none;
+}
+.bubble {
+  width: 100%;
+  aspect-ratio: 1;
+  border-radius: 50%;
+  background-color: var(--coral);
+  box-shadow: 0 4px 0 color-mix(in srgb, var(--coral) 80%, black),
+              inset 0 -3px 6px rgba(255,255,255,0.2);
+  cursor: pointer;
+  transition: transform 0.12s cubic-bezier(0.4,0,0.2,1),
+              box-shadow 0.12s cubic-bezier(0.4,0,0.2,1),
+              filter 0.12s ease;
+  transform: translateY(0) scale(1);
+  touch-action: none;
+}
+.bubble[data-row="0"] { background-color: #ff6b8a; --c: #ff6b8a; }
+.bubble[data-row="1"] { background-color: #ffaa6b; --c: #ffaa6b; }
+.bubble[data-row="2"] { background-color: #ffd56b; --c: #ffd56b; }
+.bubble[data-row="3"] { background-color: #6bffaa; --c: #6bffaa; }
+.bubble[data-row="4"] { background-color: #6bb5ff; --c: #6bb5ff; }
+
+.bubble:active:not(.popped) {
+  transform: translateY(2px) scale(0.95);
+}
+.bubble.popped {
+  transform: translateY(4px) scale(0.88);
+  box-shadow: inset 0 3px 6px var(--inset);
+  filter: brightness(0.55) saturate(0.6);
+}
+.pop-reset {
+  display: block;
+  margin: 20px auto 0;
+  background: none;
+  border: none;
+  color: var(--text-muted);
+  font-family: 'Syne', sans-serif;
+  font-size: 0.65rem;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+  cursor: pointer;
+  padding: 8px 16px;
+  border-radius: 4px;
+  transition: color 0.2s, background 0.2s;
+  touch-action: manipulation;
+}
+.pop-reset:hover {
+  color: var(--text);
+  background: var(--bg2);
+}
+
+/* ===== SPINNER ===== */
+.spinner-area {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 180px;
+  touch-action: none;
+  cursor: grab;
+}
+.spinner-area:active { cursor: grabbing; }
+.spinner {
+  position: relative;
+  width: 140px; height: 140px;
+  will-change: transform;
+}
+.s-bar {
+  position: absolute;
+  left: calc(50% - 8px);
+  bottom: 50%;
+  width: 16px; height: 44px;
+  background: linear-gradient(180deg, var(--amber), color-mix(in srgb, var(--amber) 80%, black));
+  border-radius: 8px;
+  transform-origin: center bottom;
+  transform: rotate(var(--a, 0deg));
+}
+.s-lobe {
+  position: absolute;
+  width: 34px; height: 34px;
+  border-radius: 50%;
+  background: radial-gradient(circle at 40% 35%, color-mix(in srgb, var(--amber) 100%, white 20%), var(--amber));
+  left: calc(50% - 17px); top: calc(50% - 17px);
+  transform: rotate(var(--a, 0deg)) translateY(-44px);
+  box-shadow: 0 2px 6px var(--shadow);
+}
+.s-center {
+  position: absolute;
+  width: 24px; height: 24px;
+  border-radius: 50%;
+  background: var(--card);
+  border: 3px solid var(--amber);
+  left: calc(50% - 12px); top: calc(50% - 12px);
+  box-shadow: 0 1px 4px var(--shadow);
+  z-index: 2;
+}
+.spinner-speed {
+  text-align: center;
+  font-size: 0.65rem;
+  color: var(--text-muted);
+  font-weight: 600;
+  letter-spacing: 0.05em;
+  margin-top: 12px;
+  min-height: 16px;
+}
+
+/* ===== TOGGLES - FIXED SIZE ===== */
+.toggle-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 16px;
+  width: 100%;
+  max-width: 300px;
+  margin: 0 auto;
+  touch-action: none;
+}
+.toggle {
+  width: 100%;
+  height: 60px;
+  border-radius: 999px;
+  background: var(--bg2);
+  border: 1px solid var(--card-border);
+  cursor: pointer;
+  position: relative;
+  transition: background 0.25s ease, border-color 0.25s ease;
+  overflow: hidden;
+  touch-action: none;
+}
+.toggle-thumb {
+  position: absolute;
+  top: 4px; left: 4px;
+  width: 52px;
+  height: 52px;
+  border-radius: 50%;
+  background: #fff;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.2);
+  transition: transform 0.25s cubic-bezier(0.4,0,0.2,1);
+}
+.dark .toggle-thumb { background: #ddd; }
+.toggle.on {
+  background: var(--tc, var(--mint));
+  border-color: var(--tc, var(--mint));
+}
+.toggle.on .toggle-thumb {
+  transform: translateX(calc(100% + 8px));
+}
+.toggle-stat {
+  text-align: center;
+  font-size: 0.65rem;
+  color: var(--text-muted);
+  font-weight: 600;
+  letter-spacing: 0.05em;
+  margin-top: 16px;
+  min-height: 16px;
+}
+
+/* ===== DIAL ===== */
+.dial-area {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 180px;
+  touch-action: none;
+}
+.dial-wrap {
+  position: relative;
+  width: 150px; height: 150px;
+}
+.dial-marks {
+  position: absolute; inset: 0;
+}
+.tick {
+  position: absolute;
+  left: 50%; top: 0;
+  width: 2px; height: 10px;
+  background: var(--text-muted);
+  opacity: 0.3;
+  border-radius: 1px;
+  transform-origin: center 75px;
+  transform: translateX(-50%) rotate(var(--a, 0deg));
+}
+.tick.major {
+  height: 14px;
+  opacity: 0.6;
+  width: 3px;
+}
+.dial-knob {
+  position: absolute;
+  inset: 20px;
+  border-radius: 50%;
+  background: conic-gradient(from 180deg, #3a3630, #4a4640, #3a3630, #2a2620, #3a3630);
+  box-shadow: 0 4px 12px var(--shadow-lg), inset 0 1px 2px rgba(255,255,255,0.08);
+  cursor: grab;
+  will-change: transform;
+  transition: box-shadow 0.15s ease;
+  touch-action: none;
+}
+.dark .dial-knob {
+  background: conic-gradient(from 180deg, #2a2824, #3a3834, #2a2824, #1a1814, #2a2824);
+}
+.dial-knob:active { cursor: grabbing; }
+.dial-knob.flash {
+  box-shadow: 0 4px 12px var(--shadow-lg), 0 0 20px color-mix(in srgb, var(--blue) 60%, transparent),
+              inset 0 1px 2px rgba(255,255,255,0.08);
+}
+.dial-dot {
+  position: absolute;
+  top: 10px; left: 50%;
+  width: 10px; height: 10px;
+  border-radius: 50%;
+  background: var(--blue);
+  transform: translateX(-50%);
+  box-shadow: 0 0 8px color-mix(in srgb, var(--blue) 50%, transparent);
+}
+.dial-val {
+  margin-top: 20px;
+  font-size: 1.6rem;
+  font-weight: 700;
+  color: var(--text);
+  letter-spacing: 0.05em;
+  min-width: 40px;
+  text-align: center;
+}
+
+/* ===== STRESS BALL ===== */
+.squeeze-area {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 180px;
+  touch-action: none;
+}
+.stress-ball {
+  width: 130px; height: 130px;
+  border-radius: 50%;
+  background: radial-gradient(circle at 38% 35%,
+    color-mix(in srgb, var(--lavender) 100%, white 30%),
+    var(--lavender));
+  cursor: pointer;
+  will-change: transform;
+  box-shadow: 0 10px 30px color-mix(in srgb, var(--lavender) 30%, transparent),
+              inset 0 -4px 12px rgba(0,0,0,0.15);
+  position: relative;
+  touch-action: none;
+}
+.stress-ball::after {
+  content: '';
+  position: absolute;
+  top: 18%; left: 28%;
+  width: 22%; height: 14%;
+  border-radius: 50%;
+  background: rgba(255,255,255,0.3);
+  filter: blur(3px);
+}
+.squeeze-stat {
+  text-align: center;
+  font-size: 0.65rem;
+  color: var(--text-muted);
+  font-weight: 600;
+  letter-spacing: 0.05em;
+  margin-top: 16px;
+  min-height: 16px;
+}
+
+/* ===== TAPPER ===== */
+.tapper-area {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 180px;
+  position: relative;
+  touch-action: none;
+}
+.tap-count {
+  font-size: 2.5rem;
+  font-weight: 800;
+  color: var(--text);
+  margin-bottom: 20px;
+  transition: transform 0.1s ease;
+  line-height: 1;
+}
+.tap-count.bump {
+  transform: scale(1.2);
+}
+.tap-btn {
+  width: 100px; height: 100px;
+  border-radius: 50%;
+  border: none;
+  background: linear-gradient(145deg, var(--rose), color-mix(in srgb, var(--rose) 80%, black));
+  color: #fff;
+  font-family: 'Syne', sans-serif;
+  font-size: 0.8rem;
+  font-weight: 700;
+  letter-spacing: 0.15em;
+  cursor: pointer;
+  position: relative;
+  overflow: hidden;
+  box-shadow: 0 6px 20px color-mix(in srgb, var(--rose) 35%, transparent);
+  transition: transform 0.1s ease, box-shadow 0.1s ease;
+  touch-action: none;
+}
+.tap-btn:active {
+  transform: scale(0.92);
+  box-shadow: 0 3px 12px color-mix(in srgb, var(--rose) 25%, transparent);
+}
+.ripple {
+  position: absolute;
+  border-radius: 50%;
+  background: rgba(255,255,255,0.35);
+  transform: translate(-50%,-50%) scale(0);
+  animation: rippleOut 0.55s ease-out forwards;
+  pointer-events: none;
+}
+@keyframes rippleOut {
+  to { transform: translate(-50%,-50%) scale(6); opacity: 0; }
+}
+.float-num {
+  position: absolute;
+  font-size: 0.9rem;
+  font-weight: 700;
+  color: var(--rose);
+  pointer-events: none;
+  animation: floatUp 0.7s ease-out forwards;
+}
+@keyframes floatUp {
+  0% { opacity: 1; transform: translateY(0) scale(1); }
+  100% { opacity: 0; transform: translateY(-50px) scale(0.7); }
+}
+.combo-badge {
+  position: absolute;
+  top: 0; right: 0;
+  font-size: 0.7rem;
+  font-weight: 700;
+  color: var(--rose);
+  letter-spacing: 0.1em;
+  opacity: 0;
+  transform: scale(0.8);
+  transition: opacity 0.2s, transform 0.2s;
+}
+.combo-badge.show {
+  opacity: 1;
+  transform: scale(1);
+}
+
+/* ===== BREATHER ===== */
+.breather-area {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 220px;
+  touch-action: none;
+}
+.breather-circle {
+  width: 160px; height: 160px;
+  border-radius: 50%;
+  background: radial-gradient(circle at 35% 35%,
+    color-mix(in srgb, var(--cyan) 100%, white 40%),
+    var(--cyan));
+  box-shadow: 0 10px 40px color-mix(in srgb, var(--cyan) 30%, transparent),
+              inset 0 -4px 12px rgba(0,0,0,0.15);
+  cursor: pointer;
+  will-change: transform;
+  transition: transform 0.1s ease;
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  touch-action: none;
+}
+.breather-circle::after {
+  content: '';
+  position: absolute;
+  top: 15%; left: 25%;
+  width: 25%; height: 18%;
+  border-radius: 50%;
+  background: rgba(255,255,255,0.35);
+  filter: blur(4px);
+}
+.breather-text {
+  font-size: 0.9rem;
+  font-weight: 700;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+  color: rgba(255,255,255,0.9);
+  z-index: 1;
+  pointer-events: none;
+}
+.breather-instruction {
+  margin-top: 20px;
+  font-size: 0.7rem;
+  color: var(--text-muted);
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  min-height: 16px;
+}
+
+/* ===== SLIDER ===== */
+.slider-area {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 180px;
+  touch-action: none;
+  padding: 0 20px;
+  width: 100%;
+}
+.slider-track {
+  width: 100%;
+  max-width: 280px;
+  height: 16px;
+  background: var(--bg2);
+  border-radius: 8px;
+  position: relative;
+  cursor: pointer;
+  box-shadow: inset 0 2px 6px var(--inset);
+  touch-action: none;
+}
+.slider-fill {
+  position: absolute;
+  left: 0; top: 0; bottom: 0;
+  background: linear-gradient(90deg, var(--lime), color-mix(in srgb, var(--lime) 80%, white));
+  border-radius: 8px;
+  width: 50%;
+  pointer-events: none;
+}
+.slider-thumb {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 36px; height: 36px;
+  background: var(--card);
+  border: 4px solid var(--lime);
+  border-radius: 50%;
+  transform: translate(-50%, -50%);
+  box-shadow: 0 3px 10px var(--shadow);
+  cursor: grab;
+  transition: transform 0.1s ease;
+  touch-action: none;
+}
+.slider-thumb:active {
+  cursor: grabbing;
+  transform: translate(-50%, -50%) scale(1.1);
+}
+.slider-val {
+  margin-top: 20px;
+  font-size: 1.4rem;
+  font-weight: 700;
+  color: var(--text);
+  letter-spacing: 0.05em;
+}
+
+/* ===== JELLY ===== */
+.jelly-area {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 180px;
+  touch-action: none;
+}
+.jelly-cube {
+  width: 120px; height: 120px;
+  background: linear-gradient(135deg, 
+    color-mix(in srgb, var(--coral) 100%, white 20%),
+    var(--coral));
+  border-radius: 24px;
+  cursor: pointer;
+  will-change: transform;
+  box-shadow: 0 10px 30px color-mix(in srgb, var(--coral) 30%, transparent),
+              inset 0 -4px 12px rgba(0,0,0,0.15);
+  position: relative;
+  transition: border-radius 0.3s ease;
+  touch-action: none;
+}
+.jelly-cube::after {
+  content: '';
+  position: absolute;
+  top: 10%; left: 15%;
+  width: 30%; height: 20%;
+  border-radius: 50%;
+  background: rgba(255,255,255,0.3);
+  filter: blur(3px);
+}
+.jelly-stat {
+  text-align: center;
+  font-size: 0.7rem;
+  color: var(--text-muted);
+  font-weight: 600;
+  letter-spacing: 0.05em;
+  margin-top: 16px;
+  min-height: 16px;
+}
+
+/* ===== ORBIT ===== */
+.orbit-area {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 220px;
+  touch-action: none;
+  width: 100%;
+}
+.orbit-system {
+  position: relative;
+  width: 180px; height: 180px;
+  touch-action: none;
+}
+.orbit-center {
+  position: absolute;
+  left: 50%; top: 50%;
+  width: 28px; height: 28px;
+  margin-left: -14px;
+  margin-top: -14px;
+  background: var(--amber);
+  border-radius: 50%;
+  box-shadow: 0 0 24px color-mix(in srgb, var(--amber) 50%, transparent);
+}
+.orbit-ring {
+  position: absolute;
+  left: 50%; top: 50%;
+  width: 120px; height: 120px;
+  margin-left: -60px;
+  margin-top: -60px;
+  border: 3px solid var(--card-border);
+  border-radius: 50%;
+}
+.orbit-ball {
+  position: absolute;
+  left: 50%; top: 50%;
+  width: 20px; height: 20px;
+  margin-left: -10px;
+  margin-top: -10px;
+  background: var(--coral);
+  border-radius: 50%;
+  box-shadow: 0 3px 10px var(--shadow);
+  cursor: grab;
+  touch-action: none;
+  will-change: transform;
+}
+.orbit-ball:active {
+  cursor: grabbing;
+}
+.orbit-speed {
+  text-align: center;
+  font-size: 0.7rem;
+  color: var(--text-muted);
+  font-weight: 600;
+  letter-spacing: 0.05em;
+  margin-top: 16px;
+  min-height: 16px;
+}
+
+/* ===== ANIMATIONS ===== */
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(12px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* ===== RESPONSIVE ===== */
+@media (max-width: 480px) {
+  header h1 { font-size: 2.6rem; }
+  .home-content { padding: 28px 14px 50px; }
+  .home-grid { grid-template-columns: repeat(2, 1fr); gap: 12px; }
+  .toy-thumb { padding: 16px 12px; }
+  .toy-icon { width: 48px; height: 48px; font-size: 1.5rem; }
+  .toy-stage { padding: 24px; min-height: 280px; }
+  .toggle { height: 50px; }
+  .toggle-thumb { width: 42px; height: 42px; }
+}
+@media (min-width: 700px) {
+  .home-grid { grid-template-columns: repeat(3, 1fr); }
+}
+@media (min-width: 960px) {
+  .home-grid { grid-template-columns: repeat(4, 1fr); }
+}
+</style>
+<base target="_blank">
+</head>
+<body>
+
+<div class="app-container">
+  
+  <!-- HOME SCREEN -->
+  <div class="screen active" id="homeScreen">
+    <div class="home-content">
+      <header>
+        <h1>FIDGET</h1>
+        <p>satisfying digital toys</p>
+      </header>
+      
+      <div class="home-grid">
+        <div class="toy-thumb" data-toy="popit" style="--accent: var(--coral)">
+          <div class="toy-icon">🔴</div>
+          <div class="toy-name">Pop-It</div>
+        </div>
+        <div class="toy-thumb" data-toy="spinner" style="--accent: var(--amber)">
+          <div class="toy-icon">🌀</div>
+          <div class="toy-name">Spinner</div>
+        </div>
+        <div class="toy-thumb" data-toy="toggles" style="--accent: var(--mint)">
+          <div class="toy-icon">🔘</div>
+          <div class="toy-name">Switches</div>
+        </div>
+        <div class="toy-thumb" data-toy="dial" style="--accent: var(--blue)">
+          <div class="toy-icon">🎛️</div>
+          <div class="toy-name">Dial</div>
+        </div>
+        <div class="toy-thumb" data-toy="squeeze" style="--accent: var(--lavender)">
+          <div class="toy-icon">🟣</div>
+          <div class="toy-name">Squeeze</div>
+        </div>
+        <div class="toy-thumb" data-toy="tapper" style="--accent: var(--rose)">
+          <div class="toy-icon">👆</div>
+          <div class="toy-name">Tapper</div>
+        </div>
+        <div class="toy-thumb" data-toy="breather" style="--accent: var(--cyan)">
+          <div class="toy-icon">🫁</div>
+          <div class="toy-name">Breather</div>
+        </div>
+        <div class="toy-thumb" data-toy="slider" style="--accent: var(--lime)">
+          <div class="toy-icon">🎚️</div>
+          <div class="toy-name">Slider</div>
+        </div>
+        <div class="toy-thumb" data-toy="jelly" style="--accent: var(--coral)">
+          <div class="toy-icon">🟦</div>
+          <div class="toy-name">Jelly</div>
+        </div>
+        <div class="toy-thumb" data-toy="orbit" style="--accent: var(--amber)">
+          <div class="toy-icon">💫</div>
+          <div class="toy-name">Orbit</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- POP-IT SCREEN -->
+  <div class="screen toy-screen" id="popitScreen">
+    <button class="back-btn">← Back</button>
+    <div class="toy-title">Pop-It</div>
+    <div class="toy-hint">tap bubbles to pop</div>
+    <div class="toy-stage">
+      <div class="pop-grid" id="popGrid"></div>
+      <button class="pop-reset" id="popReset">reset</button>
+    </div>
+  </div>
+
+  <!-- SPINNER SCREEN -->
+  <div class="screen toy-screen" id="spinnerScreen">
+    <button class="back-btn">← Back</button>
+    <div class="toy-title">Spinner</div>
+    <div class="toy-hint">flick to spin</div>
+    <div class="toy-stage">
+      <div class="spinner-area" id="spinnerArea">
+        <div class="spinner" id="spinner">
+          <div class="s-bar" style="--a:0deg"></div>
+          <div class="s-bar" style="--a:120deg"></div>
+          <div class="s-bar" style="--a:240deg"></div>
+          <div class="s-lobe" style="--a:0deg"></div>
+          <div class="s-lobe" style="--a:120deg"></div>
+          <div class="s-lobe" style="--a:240deg"></div>
+          <div class="s-center"></div>
+        </div>
+      </div>
+      <div class="spinner-speed" id="spinSpeed"></div>
+    </div>
+  </div>
+
+  <!-- TOGGLES SCREEN -->
+  <div class="screen toy-screen" id="togglesScreen">
+    <button class="back-btn">← Back</button>
+    <div class="toy-title">Switches</div>
+    <div class="toy-hint">toggle away</div>
+    <div class="toy-stage">
+      <div class="toggle-grid" id="toggleGrid"></div>
+      <div class="toggle-stat" id="toggleStat"></div>
+    </div>
+  </div>
+
+  <!-- DIAL SCREEN -->
+  <div class="screen toy-screen" id="dialScreen">
+    <button class="back-btn">← Back</button>
+    <div class="toy-title">Dial</div>
+    <div class="toy-hint">drag to turn</div>
+    <div class="toy-stage">
+      <div class="dial-area" id="dialArea">
+        <div class="dial-wrap">
+          <div class="dial-marks" id="dialMarks"></div>
+          <div class="dial-knob" id="dialKnob">
+            <div class="dial-dot"></div>
+          </div>
+        </div>
+        <div class="dial-val" id="dialVal">0</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- SQUEEZE SCREEN -->
+  <div class="screen toy-screen" id="squeezeScreen">
+    <button class="back-btn">← Back</button>
+    <div class="toy-title">Squeeze</div>
+    <div class="toy-hint">press & hold</div>
+    <div class="toy-stage">
+      <div class="squeeze-area" id="squeezeArea">
+        <div class="stress-ball" id="stressBall"></div>
+      </div>
+      <div class="squeeze-stat" id="squeezeStat"></div>
+    </div>
+  </div>
+
+  <!-- TAPPER SCREEN -->
+  <div class="screen toy-screen" id="tapperScreen">
+    <button class="back-btn">← Back</button>
+    <div class="toy-title">Tapper</div>
+    <div class="toy-hint">tap it fast</div>
+    <div class="toy-stage">
+      <div class="tapper-area" id="tapperArea">
+        <div class="tap-count" id="tapCount">0</div>
+        <button class="tap-btn" id="tapBtn">TAP</button>
+        <div class="combo-badge" id="comboBadge"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- BREATHER SCREEN -->
+  <div class="screen toy-screen" id="breatherScreen">
+    <button class="back-btn">← Back</button>
+    <div class="toy-title">Breather</div>
+    <div class="toy-hint">tap to breathe</div>
+    <div class="toy-stage">
+      <div class="breather-area" id="breatherArea">
+        <div class="breather-circle" id="breatherCircle">
+          <div class="breather-text" id="breatherText">IN</div>
+        </div>
+        <div class="breather-instruction" id="breatherInst">tap and hold</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- SLIDER SCREEN -->
+  <div class="screen toy-screen" id="sliderScreen">
+    <button class="back-btn">← Back</button>
+    <div class="toy-title">Slider</div>
+    <div class="toy-hint">slide smoothly</div>
+    <div class="toy-stage">
+      <div class="slider-area" id="sliderArea">
+        <div class="slider-track" id="sliderTrack">
+          <div class="slider-fill" id="sliderFill"></div>
+          <div class="slider-thumb" id="sliderThumb"></div>
+        </div>
+        <div class="slider-val" id="sliderVal">50%</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- JELLY SCREEN -->
+  <div class="screen toy-screen" id="jellyScreen">
+    <button class="back-btn">← Back</button>
+    <div class="toy-title">Jelly</div>
+    <div class="toy-hint">squish the cube</div>
+    <div class="toy-stage">
+      <div class="jelly-area" id="jellyArea">
+        <div class="jelly-cube" id="jellyCube"></div>
+      </div>
+      <div class="jelly-stat" id="jellyStat"></div>
+    </div>
+  </div>
+
+  <!-- ORBIT SCREEN -->
+  <div class="screen toy-screen" id="orbitScreen">
+    <button class="back-btn">← Back</button>
+    <div class="toy-title">Orbit</div>
+    <div class="toy-hint">spin the planet</div>
+    <div class="toy-stage">
+      <div class="orbit-area" id="orbitArea">
+        <div class="orbit-system" id="orbitSystem">
+          <div class="orbit-center"></div>
+          <div class="orbit-ring"></div>
+          <div class="orbit-ball" id="orbitBall"></div>
+        </div>
+      </div>
+      <div class="orbit-speed" id="orbitSpeed"></div>
+    </div>
+  </div>
+
+</div>
+
+<script>
+/* ===== Dark Mode ===== */
+if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
+  document.documentElement.classList.add('dark');
+}
+window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', e => {
+  document.documentElement.classList.toggle('dark', e.matches);
+});
+
+/* ===== Navigation ===== */
+const toys = {
+  popit: 'popitScreen',
+  spinner: 'spinnerScreen',
+  toggles: 'togglesScreen',
+  dial: 'dialScreen',
+  squeeze: 'squeezeScreen',
+  tapper: 'tapperScreen',
+  breather: 'breatherScreen',
+  slider: 'sliderScreen',
+  jelly: 'jellyScreen',
+  orbit: 'orbitScreen'
+};
+
+function showScreen(id) {
+  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+  const target = document.getElementById(id);
+  if (target) target.classList.add('active');
+}
+
+document.querySelectorAll('.toy-thumb').forEach(thumb => {
+  thumb.addEventListener('pointerdown', (e) => {
+    e.preventDefault();
+    const toy = thumb.dataset.toy;
+    if (toys[toy]) showScreen(toys[toy]);
+  });
+});
+
+document.querySelectorAll('.back-btn').forEach(btn => {
+  btn.addEventListener('pointerdown', (e) => {
+    e.preventDefault();
+    showScreen('homeScreen');
+  });
+});
+
+/* ===== Utilities ===== */
+function haptic(ms) {
+  try { if (navigator.vibrate) navigator.vibrate(ms || 8); } catch(_) { }
+}
+
+function normAngle(a) {
+  while (a > Math.PI) a -= 2 * Math.PI;
+  while (a < -Math.PI) a += 2 * Math.PI;
+  return a;
+}
+
+/* ===== POP-IT - FIXED ===== */
+(function initPopIt() {
+  const grid = document.getElementById('popGrid');
+  const resetBtn = document.getElementById('popReset');
+  const hues = ['#ff6b8a','#ffaa6b','#ffd56b','#6bffaa','#6bb5ff'];
+  const bubbles = [];
+
+  for (let i = 0; i < 25; i++) {
+    const row = Math.floor(i / 5);
+    const b = document.createElement('div');
+    b.className = 'bubble';
+    b.setAttribute('data-row', row);
+    b.style.backgroundColor = hues[row];
+    b.addEventListener('pointerdown', function(e) {
+      e.preventDefault();
+      this.classList.toggle('popped');
+      haptic(this.classList.contains('popped') ? 12 : 6);
+    });
+    grid.appendChild(b);
+    bubbles.push(b);
+  }
+
+  resetBtn.addEventListener('pointerdown', function(e) {
+    e.preventDefault();
+    bubbles.forEach((b, i) => {
+      setTimeout(() => {
+        b.classList.remove('popped');
+        haptic(3);
+      }, i * 25);
+    });
+  });
+})();
+
+/* ===== SPINNER ===== */
+(function initSpinner() {
+  const area = document.getElementById('spinnerArea');
+  const el = document.getElementById('spinner');
+  const speedEl = document.getElementById('spinSpeed');
+
+  let angle = 0, velocity = 0, dragging = false;
+  let lastPtrAngle = 0, lastTime = 0, animating = false;
+  const FRICTION = 0.35;
+
+  function ptrAngle(e) {
+    const r = area.getBoundingClientRect();
+    return Math.atan2(
+      e.clientY - (r.top + r.height / 2),
+      e.clientX - (r.left + r.width / 2)
+    );
+  }
+
+  area.addEventListener('pointerdown', function(e) {
+    e.preventDefault();
+    this.setPointerCapture(e.pointerId);
+    dragging = true;
+    lastPtrAngle = ptrAngle(e);
+    lastTime = performance.now();
+    velocity = 0;
+  });
+
+  area.addEventListener('pointermove', function(e) {
+    if (!dragging) return;
+    const now = performance.now();
+    const a = ptrAngle(e);
+    const delta = normAngle(a - lastPtrAngle);
+    angle += delta;
+    const dt = (now - lastTime) / 1000;
+    if (dt > 0) {
+      const iv = delta / dt;
+      velocity = velocity * 0.6 + iv * 0.4;
+    }
+    lastPtrAngle = a;
+    lastTime = now;
+    el.style.transform = 'rotate(' + angle + 'rad)';
+    if (!animating) startAnim();
+  });
+
+  area.addEventListener('pointerup', function(e) {
+    dragging = false;
+    this.releasePointerCapture(e.pointerId);
+  });
+  
+  area.addEventListener('pointercancel', function(e) {
+    dragging = false;
+    this.releasePointerCapture(e.pointerId);
+  });
+
+  function startAnim() {
+    animating = true;
+    let prev = performance.now();
+    function tick(ts) {
+      const dt = (ts - prev) / 1000;
+      prev = ts;
+      if (!dragging) {
+        angle += velocity * dt;
+        velocity *= Math.exp(-FRICTION * dt);
+        el.style.transform = 'rotate(' + angle + 'rad)';
+      }
+      const rpm = Math.abs(velocity) * 60 / (2 * Math.PI);
+      speedEl.textContent = rpm > 1 ? Math.round(rpm) + ' rpm' : '';
+      if (Math.abs(velocity) > 0.08 || dragging) {
+        requestAnimationFrame(tick);
+      } else {
+        velocity = 0;
+        animating = false;
+        speedEl.textContent = '';
+      }
+    }
+    requestAnimationFrame(tick);
+  }
+})();
+
+/* ===== TOGGLES - FIXED SIZE ===== */
+(function initToggles() {
+  const grid = document.getElementById('toggleGrid');
+  const stat = document.getElementById('toggleStat');
+  const colors = [
+    '#38a878','#40a0d0','#d07048','#a060c0',
+    '#c86878','#50b060','#5088c8','#d0a040',
+    '#b058a0'
+  ];
+  const toggles = [];
+
+  for (let i = 0; i < 9; i++) {
+    const t = document.createElement('div');
+    t.className = 'toggle';
+    t.style.setProperty('--tc', colors[i]);
+    t.innerHTML = '<div class="toggle-thumb"></div>';
+    t.addEventListener('pointerdown', function(e) {
+      e.preventDefault();
+      this.classList.toggle('on');
+      haptic(10);
+      const n = toggles.filter(x => x.classList.contains('on')).length;
+      stat.textContent = n > 0 ? n + ' / 9 on' : '';
+    });
+    grid.appendChild(t);
+    toggles.push(t);
+  }
+})();
+
+/* ===== DIAL ===== */
+(function initDial() {
+  const area = document.getElementById('dialArea');
+  const marks = document.getElementById('dialMarks');
+  const knob = document.getElementById('dialKnob');
+  const valEl = document.getElementById('dialVal');
+
+  for (let i = 0; i < 24; i++) {
+    const t = document.createElement('div');
+    t.className = 'tick' + (i % 2 === 0 ? ' major' : '');
+    t.style.setProperty('--a', (i * 15) + 'deg');
+    marks.appendChild(t);
+  }
+
+  let dialAngle = 0, lastStep = 0, dragging = false, lastPtr = 0;
+
+  function ptrAngle(e) {
+    const r = knob.getBoundingClientRect();
+    return Math.atan2(
+      e.clientY - (r.top + r.height / 2),
+      e.clientX - (r.left + r.width / 2)
+    );
+  }
+
+  knob.addEventListener('pointerdown', function(e) {
+    e.preventDefault();
+    this.setPointerCapture(e.pointerId);
+    dragging = true;
+    lastPtr = ptrAngle(e);
+  });
+
+  area.addEventListener('pointermove', function(e) {
+    if (!dragging) return;
+    const a = ptrAngle(e);
+    const delta = normAngle(a - lastPtr);
+    dialAngle += delta;
+    lastPtr = a;
+
+    const step = Math.round(dialAngle / (Math.PI / 6));
+    if (step !== lastStep) {
+      knob.classList.add('flash');
+      setTimeout(() => knob.classList.remove('flash'), 100);
+      haptic(5);
+      lastStep = step;
+    }
+
+    knob.style.transform = 'rotate(' + dialAngle + 'rad)';
+    const display = ((step % 12) + 12) % 12;
+    valEl.textContent = display;
+  });
+
+  function endDial(e) {
+    if (!dragging) return;
+    dragging = false;
+    if (e && e.currentTarget) e.currentTarget.releasePointerCapture(e.pointerId);
+    const target = Math.round(dialAngle / (Math.PI / 6)) * (Math.PI / 6);
+    dialAngle = target;
+    knob.style.transition = 'transform 0.15s cubic-bezier(0.4,0,0.2,1)';
+    knob.style.transform = 'rotate(' + dialAngle + 'rad)';
+    setTimeout(() => { knob.style.transition = ''; }, 160);
+  }
+
+  knob.addEventListener('pointerup', endDial);
+  knob.addEventListener('pointercancel', endDial);
+})();
+
+/* ===== STRESS BALL ===== */
+(function initSqueeze() {
+  const ball = document.getElementById('stressBall');
+  const stat = document.getElementById('squeezeStat');
+  let pressing = false, amount = 0, animId = null;
+
+  ball.addEventListener('pointerdown', function(e) {
+    e.preventDefault();
+    this.setPointerCapture(e.pointerId);
+    pressing = true;
+    ball.style.transition = 'none';
+    haptic(15);
+    if (!animId) pump();
+  });
+
+  function pump() {
+    if (pressing) amount = Math.min(amount + 0.025, 1);
+    const sx = 1 + amount * 0.28;
+    const sy = 1 - amount * 0.22;
+    ball.style.transform = 'scaleX(' + sx + ') scaleY(' + sy + ')';
+
+    const h = 270 - amount * 230;
+    const s = 58 + amount * 22;
+    const l = 52 + amount * 8;
+    ball.style.background = 'radial-gradient(circle at 38% 35%, hsl(' + h + ',' + s + '%,' + (l + 18) + '%), hsl(' + h + ',' + s + '%,' + l + '%))';
+    
+    stat.textContent = amount > 0.1 ? Math.round(amount * 100) + '% stress' : '';
+
+    if (pressing || amount > 0.001) {
+      animId = requestAnimationFrame(pump);
+    } else {
+      animId = null;
+      ball.style.background = '';
+    }
+  }
+
+  function release(e) {
+    if (!pressing) return;
+    pressing = false;
+    if (e && e.currentTarget) e.currentTarget.releasePointerCapture(e.pointerId);
+    ball.style.transition = 'transform 0.55s cubic-bezier(0.175,0.885,0.32,1.4), background 0.6s ease';
+    amount = 0;
+    ball.style.transform = 'scaleX(1) scaleY(1)';
+    ball.style.background = '';
+    stat.textContent = '';
+    haptic(8);
+  }
+
+  ball.addEventListener('pointerup', release);
+  ball.addEventListener('pointercancel', release);
+})();
+
+/* ===== TAPPER ===== */
+(function initTapper() {
+  const btn = document.getElementById('tapBtn');
+  const countEl = document.getElementById('tapCount');
+  const area = document.getElementById('tapperArea');
+  const badge = document.getElementById('comboBadge');
+
+  let count = 0, combo = 0, lastTap = 0, comboTimer = null;
+
+  btn.addEventListener('pointerdown', function(e) {
+    e.preventDefault();
+    count++;
+    const now = Date.now();
+    if (now - lastTap < 350) combo++; else combo = 1;
+    lastTap = now;
+
+    countEl.textContent = count;
+    countEl.classList.add('bump');
+    setTimeout(() => countEl.classList.remove('bump'), 100);
+
+    const rect = btn.getBoundingClientRect();
+    const rip = document.createElement('div');
+    rip.className = 'ripple';
+    rip.style.cssText = `width:20px;height:20px;left:${e.clientX-rect.left}px;top:${e.clientY-rect.top}px`;
+    btn.appendChild(rip);
+    setTimeout(() => rip.remove(), 560);
+
+    const fl = document.createElement('div');
+    fl.className = 'float-num';
+    fl.textContent = combo > 2 ? '+' + combo : '+1';
+    const areaRect = area.getBoundingClientRect();
+    fl.style.cssText = `left:${e.clientX-areaRect.left-10}px;top:${e.clientY-areaRect.top-20}px`;
+    area.appendChild(fl);
+    setTimeout(() => fl.remove(), 700);
+
+    if (combo > 2) {
+      badge.textContent = combo + 'x COMBO';
+      badge.classList.add('show');
+      clearTimeout(comboTimer);
+      comboTimer = setTimeout(() => badge.classList.remove('show'), 800);
+    }
+
+    haptic(10);
+  });
+})();
+
+/* ===== BREATHER ===== */
+(function initBreather() {
+  const circle = document.getElementById('breatherCircle');
+  const text = document.getElementById('breatherText');
+  const inst = document.getElementById('breatherInst');
+  let pressing = false, scale = 1, growing = true, animId = null;
+
+  circle.addEventListener('pointerdown', function(e) {
+    e.preventDefault();
+    this.setPointerCapture(e.pointerId);
+    pressing = true;
+    growing = true;
+    text.textContent = 'IN';
+    inst.textContent = 'breathe in...';
+    if (!animId) breathe();
+  });
+
+  function breathe() {
+    if (pressing) {
+      scale = Math.min(scale + 0.008, 1.6);
+      if (scale >= 1.6) {
+        growing = false;
+        text.textContent = 'HOLD';
+        inst.textContent = 'hold...';
+      }
+    } else {
+      scale = Math.max(scale - 0.012, 1);
+      text.textContent = 'OUT';
+      inst.textContent = 'breathe out...';
+    }
+    
+    circle.style.transform = 'scale(' + scale + ')';
+    
+    const hue = 170 + (scale - 1) * 40;
+    circle.style.background = `radial-gradient(circle at 35% 35%, hsl(${hue}, 70%, 60%), hsl(${hue}, 60%, 45%))`;
+
+    if (scale > 1.001 || pressing) {
+      animId = requestAnimationFrame(breathe);
+    } else {
+      animId = null;
+      scale = 1;
+      circle.style.transform = '';
+      text.textContent = 'IN';
+      inst.textContent = 'tap and hold';
+    }
+  }
+
+  function release(e) {
+    pressing = false;
+    if (e && e.currentTarget) e.currentTarget.releasePointerCapture(e.pointerId);
+    haptic(8);
+  }
+
+  circle.addEventListener('pointerup', release);
+  circle.addEventListener('pointercancel', release);
+})();
+
+/* ===== SLIDER ===== */
+(function initSlider() {
+  const track = document.getElementById('sliderTrack');
+  const fill = document.getElementById('sliderFill');
+  const thumb = document.getElementById('sliderThumb');
+  const valEl = document.getElementById('sliderVal');
+  let dragging = false, value = 50;
+
+  function updateSlider(pct) {
+    value = Math.max(0, Math.min(100, pct));
+    fill.style.width = value + '%';
+    thumb.style.left = value + '%';
+    valEl.textContent = Math.round(value) + '%';
+  }
+
+  thumb.addEventListener('pointerdown', function(e) {
+    e.preventDefault();
+    this.setPointerCapture(e.pointerId);
+    dragging = true;
+  });
+
+  track.addEventListener('pointerdown', function(e) {
+    e.preventDefault();
+    const rect = track.getBoundingClientRect();
+    const pct = ((e.clientX - rect.left) / rect.width) * 100;
+    updateSlider(pct);
+    haptic(5);
+  });
+
+  window.addEventListener('pointermove', function(e) {
+    if (!dragging) return;
+    const rect = track.getBoundingClientRect();
+    const pct = ((e.clientX - rect.left) / rect.width) * 100;
+    updateSlider(pct);
+  });
+
+  window.addEventListener('pointerup', function(e) {
+    if (dragging) {
+      dragging = false;
+      if (thumb.hasPointerCapture && thumb.hasPointerCapture(e.pointerId)) {
+        thumb.releasePointerCapture(e.pointerId);
+      }
+      haptic(8);
+    }
+  });
+
+  updateSlider(50);
+})();
+
+/* ===== JELLY ===== */
+(function initJelly() {
+  const cube = document.getElementById('jellyCube');
+  const stat = document.getElementById('jellyStat');
+  let pressing = false, squish = 0, animId = null;
+
+  cube.addEventListener('pointerdown', function(e) {
+    e.preventDefault();
+    this.setPointerCapture(e.pointerId);
+    pressing = true;
+    cube.style.transition = 'none';
+    if (!animId) wobble();
+  });
+
+  function wobble() {
+    if (pressing) {
+      squish = Math.min(squish + 0.04, 1);
+    } else {
+      squish = Math.max(squish - 0.025, 0);
+    }
+
+    const sx = 1 - squish * 0.25 + Math.sin(Date.now() / 50) * squish * 0.05;
+    const sy = 1 + squish * 0.35 + Math.cos(Date.now() / 60) * squish * 0.05;
+    const rotate = Math.sin(Date.now() / 80) * squish * 8;
+    
+    cube.style.transform = `scaleX(${sx}) scaleY(${sy}) rotate(${rotate}deg)`;
+    
+    if (squish > 0.8) {
+      cube.style.borderRadius = '50%';
+    } else {
+      cube.style.borderRadius = (20 + squish * 30) + 'px';
+    }
+
+    stat.textContent = squish > 0.1 ? 'squish: ' + Math.round(squish * 100) + '%' : '';
+
+    if (squish > 0.001 || pressing) {
+      animId = requestAnimationFrame(wobble);
+    } else {
+      animId = null;
+      cube.style.transform = '';
+      cube.style.borderRadius = '20px';
+    }
+  }
+
+  function release(e) {
+    if (!pressing) return;
+    pressing = false;
+    if (e && e.currentTarget) e.currentTarget.releasePointerCapture(e.pointerId);
+    cube.style.transition = 'border-radius 0.3s ease';
+    haptic(12);
+  }
+
+  cube.addEventListener('pointerup', release);
+  cube.addEventListener('pointercancel', release);
+})();
+
+/* ===== ORBIT ===== */
+(function initOrbit() {
+  const area = document.getElementById('orbitArea');
+  const ball = document.getElementById('orbitBall');
+  const speedEl = document.getElementById('orbitSpeed');
+  
+  let angle = 0, velocity = 0, dragging = false;
+  let lastAngle = 0, lastTime = 0, animating = false;
+  const FRICTION = 0.4;
+  const radius = 60;
+
+  function updateBall() {
+    const x = Math.cos(angle) * radius;
+    const y = Math.sin(angle) * radius;
+    ball.style.transform = `translate(${x}px, ${y}px)`;
+  }
+
+  function ptrAngle(e) {
+    const rect = area.getBoundingClientRect();
+    const centerX = rect.left + rect.width / 2;
+    const centerY = rect.top + rect.height / 2;
+    return Math.atan2(e.clientY - centerY, e.clientX - centerX);
+  }
+
+  ball.addEventListener('pointerdown', function(e) {
+    e.preventDefault();
+    this.setPointerCapture(e.pointerId);
+    dragging = true;
+    lastAngle = ptrAngle(e);
+    lastTime = performance.now();
+    velocity = 0;
+  });
+
+  area.addEventListener('pointermove', function(e) {
+    if (!dragging) return;
+    const now = performance.now();
+    const a = ptrAngle(e);
+    const delta = normAngle(a - lastAngle);
+    angle += delta;
+    const dt = (now - lastTime) / 1000;
+    if (dt > 0) {
+      const iv = delta / dt;
+      velocity = velocity * 0.5 + iv * 0.5;
+    }
+    lastAngle = a;
+    lastTime = now;
+    updateBall();
+    if (!animating) startAnim();
+  });
+
+  function endDrag(e) {
+    dragging = false;
+    if (e && e.currentTarget && e.currentTarget.hasPointerCapture && e.currentTarget.hasPointerCapture(e.pointerId)) {
+      e.currentTarget.releasePointerCapture(e.pointerId);
+    }
+  }
+
+  ball.addEventListener('pointerup', endDrag);
+  ball.addEventListener('pointercancel', endDrag);
+
+  function startAnim() {
+    animating = true;
+    let prev = performance.now();
+    function tick(ts) {
+      const dt = (ts - prev) / 1000;
+      prev = ts;
+      if (!dragging) {
+        angle += velocity * dt;
+        velocity *= Math.exp(-FRICTION * dt);
+        updateBall();
+      }
+      const rpm = Math.abs(velocity) * 60 / (2 * Math.PI);
+      speedEl.textContent = rpm > 1 ? Math.round(rpm) + ' rpm' : '';
+      if (Math.abs(velocity) > 0.1 || dragging) {
+        requestAnimationFrame(tick);
+      } else {
+        velocity = 0;
+        animating = false;
+        speedEl.textContent = '';
+      }
+    }
+    requestAnimationFrame(tick);
+  }
+
+  updateBall();
+})();
+
+/* ===== Prevent context menu ===== */
+document.addEventListener('contextmenu', e => e.preventDefault());
+</script>
+</body>
+</html>

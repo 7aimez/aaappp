@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Raw Data Viewer</title>
+    <style>
+        body { font-family: sans-serif; margin: 2rem; background: #f4f4f9; }
+        .container { max-width: 800px; margin: auto; background: white; padding: 20px; border-radius: 8px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
+        textarea, input { width: 100%; margin-bottom: 10px; padding: 10px; box-sizing: border-box; }
+        pre { background: #272822; color: #f8f8f2; padding: 15px; overflow-x: auto; border-radius: 5px; min-height: 100px; white-space: pre-wrap; word-wrap: break-word; }
+        button { padding: 10px 20px; cursor: pointer; background: #007bff; color: white; border: none; border-radius: 4px; }
+        button:hover { background: #0056b3; }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h2>Raw Data Viewer</h2>
+    
+    <label>1. Upload a File:</label>
+    <input type="file" id="fileInput">
+
+    <label>2. Or Fetch from URL:</label>
+    <input type="text" id="urlInput" placeholder="https://example.com">
+    <button onclick="fetchFromUrl()">Fetch URL</button>
+
+    <label style="display:block; margin-top:20px;">3. Or Paste Raw Data:</label>
+    <textarea id="manualPaste" rows="5" placeholder="Paste text here..." oninput="updateDisplay(this.value)"></textarea>
+
+    <h3>Raw Output:</h3>
+    <pre id="output">No data loaded yet.</pre>
+</div>
+
+<script>
+    const output = document.getElementById('output');
+
+    // Handle File Upload
+    document.getElementById('fileInput').addEventListener('change', function(e) {
+        const file = e.target.files[0];
+        if (!file) return;
+        const reader = new FileReader();
+        reader.onload = (e) => updateDisplay(e.target.result);
+        reader.readAsText(file);
+    });
+
+    // Handle URL Fetch
+    async function fetchFromUrl() {
+        const url = document.getElementById('urlInput').value;
+        if (!url) return alert("Enter a URL first");
+        output.textContent = "Fetching...";
+        try {
+            const response = await fetch(url);
+            const data = await response.text();
+            updateDisplay(data);
+        } catch (err) {
+            output.textContent = "Error: " + err.message + "\n(Note: Many sites block external requests via CORS)";
+        }
+    }
+
+    function updateDisplay(text) {
+        output.textContent = text;
+    }
+</script>
+
+</body>
+</html>
